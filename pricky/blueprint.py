@@ -6,7 +6,7 @@ from .errors import RequiredAttributeMissing
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
-    """
+    """Extracts the Attributes out of an namespace dict
 
     Args:
         namespace: namespace dict of an class
@@ -23,10 +23,10 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
 
 class _Blueprint:
     """A Blueprint describes the structure of an unit"""
-    Attributes = ()
+    AttributeDefinitions = ()
 
     def __init__(self: Any, **kwattrs: Dict[str, Any]) -> None:
-        for attribute in self.Attributes:
+        for attribute in self.AttributeDefinitions:
             if attribute.required and attribute.item not in kwattrs:
                 raise RequiredAttributeMissing(attribute.item,
                                                type(self))
@@ -39,6 +39,6 @@ def blueprint(name: str,
               namespace: Dict[str, Any]) -> type:
     """metaclass to create a Blueprint"""
     namespace.update(
-        Attributes=tuple(_attributes_of_namespace(namespace)),
+        AttributeDefinitions=tuple(_attributes_of_namespace(namespace)),
     )
     return type(name, (*bases, _Blueprint), namespace)
