@@ -1,6 +1,6 @@
 """Attributes are used to define features of Blueprints"""
 
-from typing import Any, Optional, Callable, Dict, Tuple
+from typing import Any, Optional, Callable, Dict, Tuple, Union
 
 
 class Attribute:
@@ -10,7 +10,7 @@ class Attribute:
                  default: Any = None,
                  required: bool = False,
                  validator: Optional[Callable] = None,
-                 position: Optional[int] = None) -> None:
+                 position: Optional[Union[int, slice]] = None) -> None:
         """
         Args:
             default: default value of the attribute

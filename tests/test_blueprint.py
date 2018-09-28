@@ -52,3 +52,17 @@ class TestBlueprint:
         )
         b = blueprint_class(True)
         assert b.my_attr is True
+
+    def test_init_positional_argument_with_default(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute(default=True)[0]
+        )
+        b = blueprint_class()
+        assert b.my_attr is True
+
+    def test_init_slice_of_positional_arguments(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute()[1:6:2]
+        )
+        b = blueprint_class(0, 1, 2, 3, 4, 5, 6, 7, 8)
+        assert (1, 3, 5) == b.my_attr
