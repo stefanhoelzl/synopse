@@ -45,3 +45,10 @@ class TestBlueprint:
         )
         with pytest.raises(AttributeValidationFailed):
             blueprint_class(my_attr=None)
+
+    def test_init_single_positional_argument(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute()[0]
+        )
+        b = blueprint_class(True)
+        assert b.my_attr is True
