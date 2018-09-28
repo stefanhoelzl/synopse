@@ -1,6 +1,7 @@
 import pytest
 
-from pricky import blueprint, Attribute, RequiredAttributeMissing
+from pricky import blueprint, Attribute, \
+    RequiredAttributeMissing, AttributeValidationFailed
 
 
 def create_blueprint_class(**attributes):
@@ -31,3 +32,16 @@ class TestBlueprint:
         )
         with pytest.raises(RequiredAttributeMissing):
             blueprint_class()
+
+    def test_init_successfull_attribute_validation(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute(validator=lambda attr: True)
+        )
+        blueprint_class(my_attr=None)
+
+    def test_init_attribute_validation_error(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute(validator=lambda attr: False)
+        )
+        with pytest.raises(AttributeValidationFailed):
+            blueprint_class(my_attr=None)

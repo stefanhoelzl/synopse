@@ -2,7 +2,10 @@
 from typing import Any, Tuple, Dict, Iterable
 
 from .attributes import Attribute
-from .errors import RequiredAttributeMissing
+from .errors import RequiredAttributeMissing, AttributeValidationFailed
+
+
+KwAttrs = Dict[str, Any]
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
@@ -25,13 +28,29 @@ class _Blueprint:
     """A Blueprint describes the structure of an unit"""
     AttributeDefinitions = ()
 
-    def __init__(self: Any, **kwattrs: Dict[str, Any]) -> None:
+    def __init__(self, **kwattrs: KwAttrs) -> None:
         for attribute in self.AttributeDefinitions:
-            if attribute.required and attribute.item not in kwattrs:
-                raise RequiredAttributeMissing(attribute.item,
-                                               type(self))
-            setattr(self, attribute.item,
-                    kwattrs.get(attribute.item, attribute.default))
+            attribute_value = self._check_attribute(attribute, kwattrs)
+            setattr(self, attribute.item, attribute_value)
+
+    def _check_attribute(
+            self, attribute: Attribute, kwattrs: KwAttrs) -> Any:
+        value = kwattrs.get(attribute.item, attribute.default)
+        self._check_attribute_required(attribute, kwattrs)
+        self._check_attribute_validation(attribute, value)
+        return value
+
+    def _check_attribute_required(
+            self, attribute: Attribute, kwattrs: KwAttrs) -> None:
+        if attribute.required and attribute.item not in kwattrs:
+            raise RequiredAttributeMissing(attribute.item,
+                                           type(self))
+
+    def _check_attribute_validation(
+            self, attribute: Attribute, value: Any) -> None:
+        if attribute.validator and attribute.validator(value) is False:
+            raise AttributeValidationFailed(
+                attribute.item, value, type(self))
 
 
 def blueprint(name: str,
