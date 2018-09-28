@@ -14,8 +14,8 @@ class Attribute:
         Args:
             default: default value of the attribute
             required: True if the attribute is required
+            validator: function to validate the attribute value
         """
-        self.item: Optional[str] = None
         self.default = default
         self.required = required
         self.validator = validator

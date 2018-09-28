@@ -5,10 +5,11 @@ from .attributes import Attribute
 from .errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
-KwAttrs = Dict[str, Any]
+KW_ATTRS = Dict[str, Any]
 
 
-def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
+def _attributes_of_namespace(namespace: Dict[str, Any]) \
+        -> Iterable[Tuple[str, Attribute]]:
     """Extracts the Attributes out of an namespace dict
 
     Args:
@@ -19,38 +20,36 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
     """
     for attribute_name, attribute in namespace.items():
         if isinstance(attribute, Attribute):
-            if attribute.item is None:
-                attribute.item = attribute_name
-            yield attribute
+            yield attribute_name, attribute
 
 
 class _Blueprint:
     """A Blueprint describes the structure of an unit"""
-    AttributeDefinitions = ()
+    AttributeDefinitions: Dict[str, Attribute] = {}
 
-    def __init__(self, **kwattrs: KwAttrs) -> None:
-        for attribute in self.AttributeDefinitions:
-            attribute_value = self._check_attribute(attribute, kwattrs)
-            setattr(self, attribute.item, attribute_value)
+    def __init__(self, **kwattrs: KW_ATTRS) -> None:
+        for attribute_name, attribute in self.AttributeDefinitions.items():
+            attribute_value = self._check_attribute(attribute,
+                                                    attribute_name,
+                                                    kwattrs)
+            setattr(self, attribute_name, attribute_value)
 
     def _check_attribute(
-            self, attribute: Attribute, kwattrs: KwAttrs) -> Any:
-        value = kwattrs.get(attribute.item, attribute.default)
-        self._check_attribute_required(attribute, kwattrs)
-        self._check_attribute_validation(attribute, value)
+            self, attribute: Attribute, name: str, kwattrs: KW_ATTRS) -> Any:
+        value = kwattrs.get(name, attribute.default)
+        self._check_attribute_required(attribute, name, kwattrs)
+        self._check_attribute_validation(attribute, name, value)
         return value
 
     def _check_attribute_required(
-            self, attribute: Attribute, kwattrs: KwAttrs) -> None:
-        if attribute.required and attribute.item not in kwattrs:
-            raise RequiredAttributeMissing(attribute.item,
-                                           type(self))
+            self, attribute: Attribute, name: str, kwattrs: KW_ATTRS) -> None:
+        if attribute.required and name not in kwattrs:
+            raise RequiredAttributeMissing(name, type(self))
 
     def _check_attribute_validation(
-            self, attribute: Attribute, value: Any) -> None:
+            self, attribute: Attribute, name: str, value: Any) -> None:
         if attribute.validator and attribute.validator(value) is False:
-            raise AttributeValidationFailed(
-                attribute.item, value, type(self))
+            raise AttributeValidationFailed(name, value, type(self))
 
 
 def blueprint(name: str,
@@ -58,6 +57,8 @@ def blueprint(name: str,
               namespace: Dict[str, Any]) -> type:
     """metaclass to create a Blueprint"""
     namespace.update(
-        AttributeDefinitions=tuple(_attributes_of_namespace(namespace)),
+        AttributeDefinitions={
+            name: definition
+            for name, definition in _attributes_of_namespace(namespace)},
     )
     return type(name, (*bases, _Blueprint), namespace)
