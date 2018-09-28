@@ -1,4 +1,6 @@
-from pricky import blueprint, Attribute
+import pytest
+
+from pricky import blueprint, Attribute, RequiredAttributeMissing
 
 
 def create_blueprint_class(**attributes):
@@ -22,3 +24,10 @@ class TestBlueprint:
         )
         b = blueprint_class()
         assert b.my_attr is True
+
+    def test_init_required_keyword_attribute_raises_execption(self):
+        blueprint_class = create_blueprint_class(
+            my_attr=Attribute(required=True)
+        )
+        with pytest.raises(RequiredAttributeMissing):
+            blueprint_class()

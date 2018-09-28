@@ -2,6 +2,7 @@
 from typing import Any, Tuple, Dict, Iterable
 
 from .attributes import Attribute
+from .errors import RequiredAttributeMissing
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) -> Iterable[Attribute]:
@@ -26,6 +27,9 @@ class _Blueprint:
 
     def __init__(self: Any, **kwattrs: Dict[str, Any]) -> None:
         for attribute in self.Attributes:
+            if attribute.required and attribute.item not in kwattrs:
+                raise RequiredAttributeMissing(attribute.item,
+                                               type(self))
             setattr(self, attribute.item,
                     kwattrs.get(attribute.item, attribute.default))
 
