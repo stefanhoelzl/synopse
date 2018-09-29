@@ -1,15 +1,15 @@
 """Attributes are used to define features of Blueprints"""
 
-from typing import Any, Optional, Callable, Dict, Tuple, Union
+from typing import Any, Optional, Dict, Union
+from pricky.typing import Validator, KwAttrs, PosAttrs
 
 
 class Attribute:
     """Attribute defines a single value feature"""
-
     def __init__(self,
                  default: Any = None,
                  required: bool = False,
-                 validator: Optional[Callable] = None,
+                 validator: Optional[Validator] = None,
                  position: Optional[Union[int, slice]] = None) -> None:
         """
         Args:
@@ -44,7 +44,7 @@ class NamedAttribute(Attribute):
         self.name = name
 
     def extract_value(
-            self, posattrs: Tuple[Any, ...], kwattrs: Dict[str, Any]) -> Any:
+            self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
         """Extracts the value out of a argument list or keyword arguments
         Determines whats to extract by position or field.
         """
