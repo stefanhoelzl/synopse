@@ -37,6 +37,7 @@ class NamedAttribute(Attribute):
         Determines whats to extract by position or field.
         """
         value = self._get_value(posattrs, kwattrs)
+        # pylint: disable=not-callable
         if self.validator and self.validator(value) is False:
             raise AttributeValidationFailed(self.name, value)
         return value
