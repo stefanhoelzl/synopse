@@ -4,6 +4,7 @@ from typing import Any, Optional, Dict, Union
 from dataclasses import dataclass, asdict
 
 from pricky.typing import Validator, KwAttrs, PosAttrs
+from pricky.errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
 @dataclass
@@ -14,16 +15,6 @@ class Attribute:
     validator: Optional[Validator] = None
     position: Optional[Union[int, slice]] = None
     container: bool = False
-
-    @property
-    def kwargs(self) -> Dict[str, Any]:
-        """Dict with keyword arguments to create an identical Attribute"""
-        init_fn = type(self).__init__
-        kwargs_count = len(init_fn.__annotations__)-1
-        kwargs = init_fn.__code__.co_varnames[-kwargs_count:]
-        return {
-            key: getattr(self, key, None) for key in kwargs
-        }
 
     def asdict(self) -> Dict[str, Any]:
         """Returns the attribute as dict"""
@@ -41,14 +32,21 @@ class NamedAttribute(Attribute):
     """Attribute with a name"""
     name: str = ""
 
-    def extract_value(
-            self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
+    def extract_value(self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
         """Extracts the value out of a argument list or keyword arguments
         Determines whats to extract by position or field.
         """
+        value = self._get_value(posattrs, kwattrs)
+        if self.validator and self.validator(value) is False:
+            raise AttributeValidationFailed(self.name, value)
+        return value
+
+    def _get_value(self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
         try:
             if self.position is not None:
                 return posattrs[self.position]
             return kwattrs[self.name]
         except (IndexError, KeyError):
-            raise ValueError()
+            if self.required:
+                raise RequiredAttributeMissing(self.name)
+            return self.default

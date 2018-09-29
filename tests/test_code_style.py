@@ -4,6 +4,8 @@ import mypy.api
 
 def test_pylint():
     args = ["--disable=R0903",  # too-few-public-methods
+            "--disable=E1102",  # not-callable
+                                # (false positive and also handled by mypy)
             "--const-naming-style=PascalCase",
             "pricky"]
     assert 0 == pylint.lint.Run(args, exit=False).linter.msg_status
