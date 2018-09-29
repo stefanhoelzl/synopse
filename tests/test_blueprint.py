@@ -65,4 +65,5 @@ class TestBlueprint:
             my_attr=Attribute()[1:6:2]
         )
         b = blueprint_class(0, 1, 2, 3, 4, 5, 6, 7, 8)
+        assert b.AttributeDefinitions[0].container
         assert (1, 3, 5) == b.my_attr

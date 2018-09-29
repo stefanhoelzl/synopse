@@ -29,7 +29,9 @@ class Attribute:
         """Returns the attribute as dict"""
         return asdict(self)
 
-    def __getitem__(self, item: int) -> "Attribute":
+    def __getitem__(self, item: Union[int, slice]) -> "Attribute":
+        if isinstance(item, slice):
+            self.container = True
         self.position = item
         return self
 
