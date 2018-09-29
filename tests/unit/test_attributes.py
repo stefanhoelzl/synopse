@@ -9,10 +9,6 @@ class TestAttribute:
         attr = Attribute()[1]
         assert 1 == attr.position
 
-    def test_set_container_on_getitem_with_slice(self):
-        attr = Attribute()[1:]
-        assert attr.container
-
 
 class TestNamedAttribute:
     def test_extract_value_from_keyword_attributes(self):

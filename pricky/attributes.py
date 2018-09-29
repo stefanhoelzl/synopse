@@ -3,8 +3,8 @@ from typing import Any, Optional, Dict, Union
 
 from dataclasses import dataclass, asdict
 
-from pricky.typing import Validator, KwAttrs, PosAttrs
-from pricky.errors import RequiredAttributeMissing, AttributeValidationFailed
+from .typing import Validator, KwAttrs, PosAttrs
+from .errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
 @dataclass
@@ -14,15 +14,12 @@ class Attribute:
     required: bool = False
     validator: Optional[Validator] = None
     position: Optional[Union[int, slice]] = None
-    container: bool = False
 
     def asdict(self) -> Dict[str, Any]:
         """Returns the attribute as dict"""
         return asdict(self)
 
     def __getitem__(self, item: Union[int, slice]) -> "Attribute":
-        if isinstance(item, slice):
-            self.container = True
         self.position = item
         return self
 
