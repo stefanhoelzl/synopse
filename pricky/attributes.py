@@ -1,26 +1,19 @@
 """Attributes are used to define features of Blueprints"""
-
 from typing import Any, Optional, Dict, Union
+
+from dataclasses import dataclass, asdict
+
 from pricky.typing import Validator, KwAttrs, PosAttrs
 
 
+@dataclass
 class Attribute:
     """Attribute defines a single value feature"""
-    def __init__(self,
-                 default: Any = None,
-                 required: bool = False,
-                 validator: Optional[Validator] = None,
-                 position: Optional[Union[int, slice]] = None) -> None:
-        """
-        Args:
-            default: default value of the attribute
-            required: True if the attribute is required
-            validator: function to validate the attribute value
-        """
-        self.default = default
-        self.required = required
-        self.validator = validator
-        self.position = position
+    default: Any = None
+    required: bool = False
+    validator: Optional[Validator] = None
+    position: Optional[Union[int, slice]] = None
+    container: bool = False
 
     @property
     def kwargs(self) -> Dict[str, Any]:
@@ -32,16 +25,19 @@ class Attribute:
             key: getattr(self, key, None) for key in kwargs
         }
 
+    def asdict(self) -> Dict[str, Any]:
+        """Returns the attribute as dict"""
+        return asdict(self)
+
     def __getitem__(self, item: int) -> "Attribute":
         self.position = item
         return self
 
 
+@dataclass
 class NamedAttribute(Attribute):
     """Attribute with a name"""
-    def __init__(self, name: str, attribute: Attribute) -> None:
-        super().__init__(**attribute.kwargs)
-        self.name = name
+    name: str = ""
 
     def extract_value(
             self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:

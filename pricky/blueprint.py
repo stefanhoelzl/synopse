@@ -18,7 +18,7 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
     """
     for attribute_name, attribute in namespace.items():
         if isinstance(attribute, Attribute):
-            yield NamedAttribute(attribute_name, attribute)
+            yield NamedAttribute(name=attribute_name, **attribute.asdict())
 
 
 class AttributeInitializer:

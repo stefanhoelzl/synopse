@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+dataclasses = ">=0.6"
 
 [dev-packages]
 # testing
