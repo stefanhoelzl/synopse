@@ -31,6 +31,14 @@ class Blueprint:
                 named_attribute.extract_value(*args, **kwargs)
             )
 
+    def __eq__(self, other: Any) -> bool:
+        if type(other) != type(self):  # pylint: disable=unidiomatic-typecheck
+            return False
+        for attribute in self.AttributeDefinitions:
+            if getattr(self, attribute.name) != getattr(other, attribute.name):
+                return False
+        return True
+
     # pylint: disable=no-self-use
     def structure_definition(self) -> StructureDefinition:
         """Returns a definition to rebuild the structure"""
