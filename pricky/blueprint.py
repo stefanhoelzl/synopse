@@ -1,7 +1,8 @@
 """Everything needed to build a Blueprint class"""
-from typing import Any, Tuple, Dict, Iterable, Union, Optional, cast
+from typing import Any, Tuple, Dict, Iterable
 
 from .attributes import Attribute, NamedAttribute
+from .structure import Structure, StructureDefinition
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) \
@@ -12,15 +13,6 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
             attribute_dict = attribute.asdict()
             attribute_dict.update(name=attribute_name)
             yield NamedAttribute(**attribute_dict)
-
-
-Key = Union[int, str]
-
-Structure = Dict[Key, "StructuredBlueprint"]
-
-StructureDefinition = Optional[Union["StructuredBlueprint",
-                                     Iterable["StructuredBlueprint"],
-                                     Structure]]
 
 
 class BlueprintDescription:
@@ -43,50 +35,24 @@ class StructuredBlueprint(BlueprintDescription):
     """A Blueprint holding a structure"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.current_structure: Structure = {}
+        self.structure: Structure = Structure()
 
     # pylint: disable=no-self-use
     def structure_definition(self) -> StructureDefinition:
         """Returns a definition to rebuild the structure"""
         return None
 
-    def rebuild_structure(self) -> Structure:
-        """Re-builds the structure with the current state"""
-        structure_defintion = self.structure_definition()
-        if isinstance(structure_defintion, dict):
-            return structure_defintion
-        elif isinstance(structure_defintion, StructuredBlueprint):
-            return {0: structure_defintion}
-        elif isinstance(structure_defintion, Iterable):
-            # WORKAROUND: mypy bug with inferencing type of enumeration
-            # MYPY-230:  https://github.com/python/mypy/issues/230
-            # MYPY-5579: https://github.com/python/mypy/issues/5579
-            typed_enumeration = cast(Iterable[Tuple[int, StructuredBlueprint]],
-                                     enumerate(structure_defintion))
-            return {key: blueprint for key, blueprint in typed_enumeration}
-        return {}
 
-
-class ChangeableBlueprint(StructuredBlueprint):
-    """A Blueprint that can be changed"""
-    def __setitem__(self, key: Key, child: StructuredBlueprint) -> None:
-        """Inserts a Item"""
-        pass
-
-    def move_item(self, old: Key, new: Key) -> None:
-        """Moves a item from one place to another"""
-        pass
-
-    def __delitem__(self, key: Key) -> None:
-        """Deletes a item"""
-        pass
-
-
-class UpdateableBlueprint(ChangeableBlueprint):
+class UpdateableBlueprint(StructuredBlueprint):
     """A Blueprint that can be updated"""
     def update(self, target: StructuredBlueprint) -> None:
         """Updates self to match another Blueprint"""
-        pass
+        self._update_attributes(target)
+
+    def _update_attributes(self, target: BlueprintDescription) -> None:
+        for attribute_definition in self.AttributeDefinitions:
+            setattr(self, attribute_definition.name,
+                    getattr(target, attribute_definition.name))
 
 
 class Blueprint(UpdateableBlueprint):
