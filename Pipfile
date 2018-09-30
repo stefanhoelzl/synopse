@@ -13,6 +13,7 @@ pytest = ">=3.8.1"
 # linter
 mypy = ">=0.630"
 pylint = ">=2.1.1"
+mccabe = ">=0.6.1"
 
 [requires]
 python_version = "3.6"
