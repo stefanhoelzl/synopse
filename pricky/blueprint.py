@@ -15,7 +15,7 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
             yield NamedAttribute(**attribute_dict)
 
 
-class BlueprintDescription:
+class Blueprint:
     """A Blueprint initialized as described with Attributes"""
     AttributeDefinitions: Tuple[NamedAttribute, ...] = ()
 
@@ -24,36 +24,23 @@ class BlueprintDescription:
         cls.AttributeDefinitions = tuple(_attributes_of_namespace(cls.__dict__))
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.structure: Structure = Structure()
         for named_attribute in self.AttributeDefinitions:
             setattr(
                 self, named_attribute.name,
                 named_attribute.extract_value(*args, **kwargs)
             )
 
-
-class StructuredBlueprint(BlueprintDescription):
-    """A Blueprint holding a structure"""
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.structure: Structure = Structure()
-
     # pylint: disable=no-self-use
     def structure_definition(self) -> StructureDefinition:
         """Returns a definition to rebuild the structure"""
         return None
 
-
-class UpdateableBlueprint(StructuredBlueprint):
-    """A Blueprint that can be updated"""
-    def update(self, target: StructuredBlueprint) -> None:
+    def update(self, target: "Blueprint") -> None:
         """Updates self to match another Blueprint"""
         self._update_attributes(target)
 
-    def _update_attributes(self, target: BlueprintDescription) -> None:
+    def _update_attributes(self, target: "Blueprint") -> None:
         for attribute_definition in self.AttributeDefinitions:
             setattr(self, attribute_definition.name,
                     getattr(target, attribute_definition.name))
-
-
-class Blueprint(UpdateableBlueprint):
-    """A Blueprint"""

@@ -11,14 +11,6 @@ class TestBlueprintDescription:
         b = blueprint_class(my_attr=True)
         assert b.my_attr is True
 
-
-def create_structure_blueprint(structure_definition):
-        blueprint = Blueprint()
-        blueprint.structure_definition = lambda: structure_definition
-        return blueprint
-
-
-class TestUpdateableBlueprint:
     def test_update_attributes(self):
         blueprint_class = create_blueprint_class(my_attr=Attribute())
         old = blueprint_class(my_attr=True)
