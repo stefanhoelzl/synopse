@@ -3,7 +3,7 @@
 
 class Lifecycle:
     """A Lifecycle of a Blueprint"""
-    def mount(self, parent: "Lifecycle") -> None:
+    def mount(self) -> None:
         """Called when inserted into a Structure"""
         pass
 

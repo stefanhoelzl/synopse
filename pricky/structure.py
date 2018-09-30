@@ -57,13 +57,14 @@ class Structure:
                 return None
         return self._keyword_children.get(key)
 
-    def __setitem__(self, key: Key, value: StructureItem) -> None:
+    def __setitem__(self, key: Key, value: Lifecycle) -> None:
         """Sets a value for a key
 
         Special cases when accessing positional keys:
         * If key == len(positionals): value is appended
         * If key is in use: value is inserted before
         """
+        value.mount()
         if isinstance(key, int):
             if key < len(self._positional_children):
                 self._positional_children.insert(key, value)
@@ -77,6 +78,10 @@ class Structure:
             self._keyword_children[key] = value
 
     def __delitem__(self, key: Key) -> None:
+        value = self[key]
+        if value is not None:
+            value.unmount()
+
         if isinstance(key, int):
             del self._positional_children[key]
         else:

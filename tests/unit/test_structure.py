@@ -1,6 +1,7 @@
 import pytest
 
 from pricky import Structure, Blueprint
+from pricky.lifecycle import Lifecycle
 
 
 class TestStructure:
@@ -80,3 +81,28 @@ class TestStructure:
             {"k": Blueprint(), "__positional__": (Blueprint(),)}
         )
         assert {"k", 0} == structure.keys()
+
+
+class LifecycleMock(Lifecycle):
+    def __init__(self):
+        self.called_hooks = []
+
+    def mount(self):
+        self.called_hooks.append("mount")
+
+    def unmount(self):
+        self.called_hooks.append("unmount")
+
+
+class TestStructureLifecycleHooks:
+    def test_mount_on_setitem(self):
+        structure = Structure()
+        lifecycle = LifecycleMock()
+        structure["key"] = lifecycle
+        assert ["mount"] == lifecycle.called_hooks
+
+    def test_unmount_on_delitem(self):
+        lifecycle = LifecycleMock()
+        structure = Structure(lifecycle)
+        del structure[0]
+        assert ["unmount"] == lifecycle.called_hooks
