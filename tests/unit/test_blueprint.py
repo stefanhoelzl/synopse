@@ -26,3 +26,11 @@ class TestBlueprintDescription:
         new = blueprint_class(my_attr=False)
         old.update(new)
         assert not old.my_attr
+
+    def test_update_set_new(self):
+        blueprint = Blueprint()
+        new_blueprint = Blueprint()
+        update_blueprint = Blueprint()
+        update_blueprint.structure_definition = lambda: Blueprint()
+        blueprint.update(update_blueprint)
+        assert {0: new_blueprint} == blueprint.structure

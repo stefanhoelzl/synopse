@@ -15,9 +15,9 @@ class Structure(dict):
         if isinstance(structure_definition, dict):
             super().__init__(structure_definition)
         elif isinstance(structure_definition, Iterable):
-            # WORKAROUND: mypy bug with inferencing type of enumeration
-            # MYPY-230:  https://github.com/python/mypy/issues/230
-            # MYPY-5579: https://github.com/python/mypy/issues/5579
+            # WORKAROUND: mypy bug with inferencing type of enumeration()
+            #  MYPY-230:  https://github.com/python/mypy/issues/230
+            #  MYPY-5579: https://github.com/python/mypy/issues/5579
             typed_enumeration = cast(Iterable[Tuple[int, WithLifecycle]],
                                      enumerate(structure_definition))
             super().__init__({key: blueprint
@@ -26,9 +26,3 @@ class Structure(dict):
             super().__init__({0: structure_definition})
         else:
             super().__init__()
-
-    def __setitem__(self, key: Key, other: WithLifecycle) -> None:
-        pass
-
-    def __delitem__(self, key: Key) -> None:
-        pass

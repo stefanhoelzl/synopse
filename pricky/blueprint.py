@@ -47,6 +47,8 @@ class Blueprint:
     def update(self, target: "Blueprint") -> None:
         """Updates self to match another Blueprint"""
         self._update_attributes(target)
+        for key, blueprint in Structure(target.structure_definition()).items():
+            self.structure[key] = blueprint
 
     def _update_attributes(self, target: "Blueprint") -> None:
         for attribute_definition in self.AttributeDefinitions:
