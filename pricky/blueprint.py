@@ -1,6 +1,5 @@
 """Everything needed to build a Blueprint class"""
 from typing import Any, Tuple, Dict, Iterable, Union
-from .typing import KwAttrs, PosAttrs
 
 from .attributes import Attribute, NamedAttribute
 
@@ -26,18 +25,18 @@ class BlueprintDescription:
         super().__init_subclass__()
         cls.AttributeDefinitions = tuple(_attributes_of_namespace(cls.__dict__))
 
-    def __init__(self, *posattrs: PosAttrs, **kwattrs: KwAttrs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         for named_attribute in self.AttributeDefinitions:
             setattr(
                 self, named_attribute.name,
-                named_attribute.extract_value(posattrs, kwattrs)
+                named_attribute.extract_value(*args, **kwargs)
             )
 
 
 class StructuredBlueprint(BlueprintDescription):
     """A Blueprint holding a structure"""
-    def __init__(self, *posattrs: PosAttrs, **kwattrs: KwAttrs) -> None:
-        super().__init__(*posattrs, **kwattrs)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.current_structure: Dict[Key, "StructuredBlueprint"] = {}
 
     def structure(self) -> None:  # pylint: disable=no-self-use

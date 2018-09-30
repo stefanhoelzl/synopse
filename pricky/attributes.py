@@ -1,10 +1,11 @@
 """Attributes are used to define features of Blueprints"""
-from typing import Any, Optional, Dict, Union
+from typing import Any, Optional, Dict, Union, Callable
 
 from dataclasses import dataclass, asdict
-
-from .typing import Validator, KwAttrs, PosAttrs
 from .errors import RequiredAttributeMissing, AttributeValidationFailed
+
+
+Validator = Callable[[Any], bool]
 
 
 @dataclass
@@ -29,17 +30,17 @@ class NamedAttribute(Attribute):
     """Attribute with a name"""
     name: str = ""
 
-    def extract_value(self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
+    def extract_value(self, *posattrs: Any, **kwattrs: Any) -> Any:
         """Extracts the value out of a argument list or keyword arguments
         Determines whats to extract by position or field.
         """
-        value = self._get_value(posattrs, kwattrs)
+        value = self._get_value(*posattrs, **kwattrs)
         # pylint: disable=not-callable
         if self.validator and self.validator(value) is False:
             raise AttributeValidationFailed(self.name, value)
         return value
 
-    def _get_value(self, posattrs: PosAttrs, kwattrs: KwAttrs) -> Any:
+    def _get_value(self, *posattrs: Any, **kwattrs: Any) -> Any:
         try:
             if self.position is not None:
                 return posattrs[self.position]
