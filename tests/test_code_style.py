@@ -1,12 +1,11 @@
-import pylint.lint
+from pylint import epylint
 import mypy.api
 
 
 def test_pylint():
     args = ["--disable=R0903",  # too-few-public-methods
-            "--const-naming-style=PascalCase",
-            "pricky"]
-    assert 0 == pylint.lint.Run(args, exit=False).linter.msg_status
+            "--const-naming-style=PascalCase"]
+    assert 0 == epylint.lint("pricky", args)
 
 
 def test_mypy():
