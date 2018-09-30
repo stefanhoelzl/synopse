@@ -8,10 +8,11 @@ StructureDefinition = Optional[Union[StructureItem,
                                      Dict[str, StructureItem]]]
 
 
-class Structure():
+class Structure:
     """A Structure contains Blueprints accessible by Keys"""
 
-    def __init__(self, structure_definition: StructureDefinition = None) -> None:
+    def __init__(self,
+                 structure_definition: StructureDefinition = None) -> None:
         self._positional_children: List[StructureItem] = []
         self._keyword_children: Dict[str, StructureItem] = {}
         self._init_with_structure_definition(structure_definition)
@@ -81,5 +82,5 @@ class Structure():
 
     def keys(self) -> Set[Key]:
         """Set of keys defined in this Structure"""
-        return set(self._keyword_children.keys()) \
-               | set(range(len(self._positional_children)))
+        positional_keys = range(len(self._positional_children))
+        return set(self._keyword_children.keys()) | set(positional_keys)
