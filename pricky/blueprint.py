@@ -57,6 +57,9 @@ class Blueprint:
                 del self.structure[key]
             elif old is None:
                 self.structure[key] = new
+            elif type(old) != type(new):  # pylint: disable=unidiomatic-typecheck
+                del self.structure[key]
+                self.structure[key] = new
 
     def _update_attributes(self, target: "Blueprint") -> None:
         for attribute_definition in self.AttributeDefinitions:

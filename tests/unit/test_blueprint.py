@@ -1,4 +1,4 @@
-from pricky import Blueprint, Attribute
+from pricky import Blueprint, Attribute, Structure
 
 
 def create_blueprint_class(**attributes):
@@ -30,9 +30,9 @@ class TestBlueprintDescription:
     def test_update_set_new(self):
         blueprint = Blueprint()
         new_blueprint = Blueprint()
-        update_blueprint = Blueprint()
-        update_blueprint.structure_definition = lambda: Blueprint()
-        blueprint.update(update_blueprint)
+        target = Blueprint()
+        target.structure_definition = lambda: Blueprint()
+        blueprint.update(target)
         assert {0: new_blueprint} == blueprint.structure
 
     def test_update_del_old(self):
@@ -40,3 +40,12 @@ class TestBlueprintDescription:
         blueprint.structure[0] = Blueprint()
         blueprint.update(Blueprint())
         assert {} == blueprint.structure
+
+    def test_update_replace_old_with_new(self):
+        new_child = create_blueprint_class()()
+        blueprint = Blueprint()
+        blueprint.structure = Structure(Blueprint())
+        target = Blueprint()
+        target.structure_definition = lambda: new_child
+        blueprint.update(target)
+        assert {0: new_child} == blueprint.structure
