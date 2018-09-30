@@ -29,24 +29,31 @@ class TestBlueprintDescription:
 
     def test_update_set_new(self):
         blueprint = Blueprint()
-        new_blueprint = Blueprint()
         target = Blueprint()
         # pylint: disable=unnecessary-lambda
         target.structure_definition = lambda: Blueprint()
         blueprint.update(target)
-        assert {0: new_blueprint} == blueprint.structure
+        assert {0: Blueprint()} == blueprint.structure
 
     def test_update_del_old(self):
         blueprint = Blueprint()
-        blueprint.structure[0] = Blueprint()
+        blueprint.structure = Structure(Blueprint())
         blueprint.update(Blueprint())
         assert {} == blueprint.structure
 
     def test_update_replace_old_with_new(self):
-        new_child = create_blueprint_class()()
+        new_blueprint = create_blueprint_class()
+        blueprint = Blueprint()
+        blueprint.structure = Structure((Blueprint(), Blueprint()))
+        target = Blueprint()
+        target.structure_definition = lambda: (new_blueprint(), Blueprint())
+        blueprint.update(target)
+        assert {0: new_blueprint(), 1: Blueprint()} == blueprint.structure
+
+    def test_update_insert_after_delete(self):
         blueprint = Blueprint()
         blueprint.structure = Structure(Blueprint())
         target = Blueprint()
-        target.structure_definition = lambda: new_child
+        target.structure_definition = lambda: (None, Blueprint())
         blueprint.update(target)
-        assert {0: new_child} == blueprint.structure
+        assert {0: None, 1: Blueprint()}

@@ -52,9 +52,13 @@ class Blueprint:
             (key, self.structure[key], target_structure[key])
             for key in set(self.structure.keys()) | set(target_structure.keys())
         )
+        key_offset = 0
         for key, old, new in compareables:
+            key = key - key_offset if isinstance(key, int) else key
+
             if new is None:
                 del self.structure[key]
+                key_offset += 1 if isinstance(key, int) else 0
             elif old is None:
                 self.structure[key] = new
             elif old.__class__ != new.__class__:
