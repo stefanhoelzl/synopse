@@ -1,79 +1,82 @@
 import pytest
 
-from pricky import Structure
+from pricky import Structure, Blueprint
 
 
 class TestStructure:
     def test_init_with_dict(self):
-        assert {"key": True} == Structure({"key": True})
+        assert {"key": Blueprint()} == Structure({"key": Blueprint()})
 
-    def test_init_with_dict_cast_keys_to_string(self):
-        assert {"0": True} == Structure({0: True})
-
-    def test_init_with_dict_containing_iterable(self):
-        assert {"key": True, 0: 1, 1: 2, 2: 3} == Structure(
-            {"key": True, "__positional__": (1, 2, 3)}
-        )
+    def test_init_with_dict_containing_positional(self):
+        assert {"key": Blueprint(), 0: Blueprint(), 1: Blueprint()} \
+               == Structure({"key": Blueprint(),
+                             "__positional__": (Blueprint(), Blueprint())})
 
     def test_init_with_none(self):
         assert {} == Structure(None)
 
     def test_init_with_object(self):
-        assert {0: True} == Structure(True)
+        assert {0: Blueprint()} == Structure(Blueprint())
 
     def test_init_with_iterable(self):
-        assert {0: 0, 1: 1, 2: 2} == Structure((0, 1, 2))
+        assert {0: Blueprint(), 1: Blueprint()} \
+               == Structure((Blueprint(), Blueprint()))
 
     def test_eq_with_dict(self):
-        assert {"0": 0, "key": 1} == Structure({0: 0, "key": 1})
+        assert {"0": Blueprint(), "key": Blueprint()} \
+               == Structure({"0": Blueprint(), "key": Blueprint()})
 
     def test_getitem_keyword(self):
-        assert Structure({"key": True})["key"]
+        assert Blueprint() == Structure({"key": Blueprint()})["key"]
 
     def test_getitem_keyword_default(self):
         assert Structure()["key"] is None
 
     def test_getitem_positional(self):
-        assert 2 == Structure((1, 2, 3))[1]
+        assert Blueprint() == Structure((None, Blueprint(), None))[1]
 
     def test_getitem_positional_default(self):
-        assert Structure((1,))[1] is None
+        assert Structure((Blueprint(),))[1] is None
 
     def test_setitem_keyword(self):
         structure = Structure()
-        structure["key"] = True
-        assert {"key": True} == structure
+        structure["key"] = Blueprint()
+        assert {"key": Blueprint()} == structure
 
     def test_setitem_append_to_positionals(self):
         structure = Structure()
-        structure[0] = True
-        assert {0: True} == structure
+        structure[0] = Blueprint()
+        assert {0: Blueprint()} == structure
 
     def test_setitem_insert_before_if_index_already_used(self):
-        structure = Structure((0, 2))
-        structure[1] = 1
-        assert {0: 0, 1: 1, 2: 2} == structure
+        structure = Structure((Blueprint(), Blueprint()))
+        structure[1] = Blueprint()
+        assert {0: Blueprint(), 1: Blueprint(), 2: Blueprint()} == structure
 
     def test_setitem_raises_indexerror_when_key_gt_len(self):
         structure = Structure()
         with pytest.raises(IndexError):
-            structure[1] = 1
+            structure[1] = Blueprint()
 
     def test_delitem_from_positional(self):
-        structure = Structure((1, 2, 3))
+        structure = Structure((None, Blueprint(), None))
         del structure[1]
-        assert {0: 1, 1: 3} == structure
+        assert {0: None, 1: None} == structure
 
     def test_delitem_from_keywords(self):
-        structure = Structure({"key": 1, "another": 0})
+        structure = Structure({"key": Blueprint(), "another": None})
         del structure["another"]
-        assert {"key": 1} == structure
+        assert {"key": Blueprint()} == structure
 
     def test_keys_return_keywords_as_set(self):
-        assert {"key", "another"} == Structure({"key": 0, "another": 1}).keys()
+        assert {"key", "another"} \
+               == Structure({"key": Blueprint(), "another": Blueprint()}).keys()
 
     def test_keys_return_positional_indexes_as_set(self):
-        assert {0, 1} == Structure((1, 2)).keys()
+        assert {0, 1} == Structure((Blueprint(), Blueprint())).keys()
 
     def test_key_return_mixed(self):
-        assert {"k", 0} == Structure({"k": True, "__positional__": (1,)}).keys()
+        structure = Structure(
+            {"k": Blueprint(), "__positional__": (Blueprint(),)}
+        )
+        assert {"k", 0} == structure.keys()

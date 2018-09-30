@@ -26,7 +26,7 @@ class Structure:
             self._positional_children = list(positionals)  # type: ignore
 
             self._keyword_children.update(
-                {str(key): item for key, item in structure_definition.items()}
+                {key: item for key, item in structure_definition.items()}
             )
         elif structure_definition is None:
             self._keyword_children.update({})
