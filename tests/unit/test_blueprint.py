@@ -8,8 +8,8 @@ def create_blueprint_class(**attributes):
 class TestBlueprintDescription:
     def test_init_attribute(self):
         blueprint_class = create_blueprint_class(my_attr=Attribute())
-        b = blueprint_class(my_attr=True)
-        assert b.my_attr is True
+        blueprint = blueprint_class(my_attr=True)
+        assert blueprint.my_attr is True
 
     def test_eq_based_on_attributes(self):
         blueprint_class = create_blueprint_class(my_attr=Attribute()[0],
@@ -31,6 +31,7 @@ class TestBlueprintDescription:
         blueprint = Blueprint()
         new_blueprint = Blueprint()
         target = Blueprint()
+        # pylint: disable=unnecessary-lambda
         target.structure_definition = lambda: Blueprint()
         blueprint.update(target)
         assert {0: new_blueprint} == blueprint.structure
