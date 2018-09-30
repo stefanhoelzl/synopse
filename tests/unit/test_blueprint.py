@@ -34,3 +34,9 @@ class TestBlueprintDescription:
         update_blueprint.structure_definition = lambda: Blueprint()
         blueprint.update(update_blueprint)
         assert {0: new_blueprint} == blueprint.structure
+
+    def test_update_del_old(self):
+        blueprint = Blueprint()
+        blueprint.structure[0] = Blueprint()
+        blueprint.update(Blueprint())
+        assert {} == blueprint.structure
