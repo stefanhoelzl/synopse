@@ -32,13 +32,19 @@ class Structure():
         else:
             self._positional_children.append(structure_definition)
 
-    def __eq__(self, other: Any) -> bool:
+    def _asdict(self) -> Dict[Key, StructureItem]:
         complete_dict: Dict[Key, StructureItem] = {}
         complete_dict.update({k: v for k, v in self._keyword_children.items()})
         complete_dict.update({
             k: v for k, v in enumerate(self._positional_children)
         })
-        return complete_dict.__eq__(other)
+        return complete_dict
+
+    def __repr__(self) -> str:
+        return self._asdict().__repr__()
+
+    def __eq__(self, other: Any) -> bool:
+        return self._asdict().__eq__(other)
 
     def __getitem__(self, key: Key) -> StructureItem:
         if isinstance(key, int):
@@ -49,9 +55,21 @@ class Structure():
         return self._keyword_children.get(key)
 
     def __setitem__(self, key: Key, value: StructureItem) -> None:
+        """Sets a value for a key
+
+        Special cases when accessing positional keys:
+        * If key == len(positionals): value is appended
+        * If key is in use: value is inserted before
+        """
         if isinstance(key, int):
-            if key == len(self._positional_children):
+            if key < len(self._positional_children):
+                self._positional_children.insert(key, value)
+            elif key == len(self._positional_children):
                 self._positional_children.append(value)
+            else:
+                raise IndexError("{} index out of range".format(
+                    self.__class__.__name__
+                ))
         else:
             self._keyword_children[key] = value
 

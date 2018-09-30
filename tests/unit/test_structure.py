@@ -1,3 +1,5 @@
+import pytest
+
 from pricky import Structure
 
 
@@ -46,6 +48,16 @@ class TestStructure:
         structure = Structure()
         structure[0] = True
         assert {0: True} == structure
+
+    def test_setitem_insert_before_if_index_already_used(self):
+        structure = Structure((0, 2))
+        structure[1] = 1
+        assert {0: 0, 1: 1, 2: 2} == structure
+
+    def test_setitem_raises_indexerror_when_key_gt_len(self):
+        structure = Structure()
+        with pytest.raises(IndexError):
+            structure[1] = 1
 
     def test_delitem_from_positional(self):
         structure = Structure((1, 2, 3))
