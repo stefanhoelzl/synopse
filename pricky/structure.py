@@ -1,11 +1,13 @@
 """Structure"""
-from typing import Union, Any, Optional, Iterable, List, Dict, Set
+from typing import Union, Any, Optional, Sequence, List, Dict, Set
+
+from .lifecycle import Lifecycle
 
 Key = Union[int, str]
-StructureItem = Any
+StructureItem = Optional[Lifecycle]
 StructureDefinition = Optional[Union[StructureItem,
-                                     Iterable[StructureItem],
-                                     Dict[str, StructureItem]]]
+                                     Sequence[StructureItem],
+                                     Dict[str, Union[StructureItem]]]]
 
 
 class Structure:
@@ -21,14 +23,14 @@ class Structure:
             self, structure_definition: StructureDefinition) -> None:
         if isinstance(structure_definition, dict):
             positionals = structure_definition.pop("__positional__", ())
-            self._positional_children = list(positionals)
+            self._positional_children = list(positionals)  # type: ignore
 
             self._keyword_children.update(
                 {str(key): item for key, item in structure_definition.items()}
             )
         elif structure_definition is None:
             self._keyword_children.update({})
-        elif isinstance(structure_definition, Iterable):
+        elif isinstance(structure_definition, Sequence):
             self._positional_children = list(structure_definition)
         else:
             self._positional_children.append(structure_definition)

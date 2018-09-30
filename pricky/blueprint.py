@@ -2,6 +2,7 @@
 from typing import Any, Tuple, Dict, Iterable
 
 from .attributes import Attribute, NamedAttribute
+from .lifecycle import Lifecycle
 from .structure import Structure, StructureDefinition
 
 
@@ -15,7 +16,7 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
             yield NamedAttribute(**attribute_dict)
 
 
-class Blueprint:
+class Blueprint(Lifecycle):
     """A Blueprint initialized as described with Attributes"""
     AttributeDefinitions: Tuple[NamedAttribute, ...] = ()
 
