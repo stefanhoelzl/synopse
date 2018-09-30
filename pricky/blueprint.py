@@ -49,7 +49,7 @@ class Blueprint:
         self._update_attributes(target)
         target_structure = Structure(target.structure_definition())
         compareables = (
-            (key, self.structure.get(key), target_structure.get(key))
+            (key, self.structure[key], target_structure[key])
             for key in set(self.structure.keys()) | set(target_structure.keys())
         )
         for key, old, new in compareables:
