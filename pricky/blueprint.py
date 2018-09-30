@@ -1,5 +1,5 @@
 """Everything needed to build a Blueprint class"""
-from typing import Any, Tuple, Dict, Iterable, Union
+from typing import Any, Tuple, Dict, Iterable, Union, Optional, cast
 
 from .attributes import Attribute, NamedAttribute
 
@@ -15,6 +15,12 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
 
 
 Key = Union[int, str]
+
+Structure = Dict[Key, "StructuredBlueprint"]
+
+StructureDefinition = Optional[Union["StructuredBlueprint",
+                                     Iterable["StructuredBlueprint"],
+                                     Structure]]
 
 
 class BlueprintDescription:
@@ -37,11 +43,28 @@ class StructuredBlueprint(BlueprintDescription):
     """A Blueprint holding a structure"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.current_structure: Dict[Key, "StructuredBlueprint"] = {}
+        self.current_structure: Structure = {}
 
-    def structure(self) -> None:  # pylint: disable=no-self-use
-        """Re-builds the structure with the current state"""
+    # pylint: disable=no-self-use
+    def structure_definition(self) -> StructureDefinition:
+        """Returns a definition to rebuild the structure"""
         return None
+
+    def rebuild_structure(self) -> Structure:
+        """Re-builds the structure with the current state"""
+        structure_defintion = self.structure_definition()
+        if isinstance(structure_defintion, dict):
+            return structure_defintion
+        elif isinstance(structure_defintion, StructuredBlueprint):
+            return {0: structure_defintion}
+        elif isinstance(structure_defintion, Iterable):
+            # WORKAROUND: mypy bug with inferencing type of enumeration
+            # MYPY-230:  https://github.com/python/mypy/issues/230
+            # MYPY-5579: https://github.com/python/mypy/issues/5579
+            typed_enumeration = cast(Iterable[Tuple[int, StructuredBlueprint]],
+                                     enumerate(structure_defintion))
+            return {key: blueprint for key, blueprint in typed_enumeration}
+        return {}
 
 
 class ChangeableBlueprint(StructuredBlueprint):
