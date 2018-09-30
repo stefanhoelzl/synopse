@@ -1,8 +1,8 @@
-from pricky import blueprint, Attribute
+from pricky import Blueprint, Attribute
 
 
 def create_blueprint_class(**attributes):
-    return blueprint("BlueprintToTest", (), attributes)
+    return type("BlueprintToTest", (Blueprint,), attributes)
 
 
 class TestBlueprint:
