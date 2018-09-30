@@ -9,6 +9,7 @@ dataclasses = ">=0.6"
 [dev-packages]
 # testing
 pytest = ">=3.8.1"
+pytest-ordering = ">=0.5"
 
 # linter
 mypy = ">=0.630"

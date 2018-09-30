@@ -1,28 +1,44 @@
 import io
 import contextlib
 from pathlib import Path
+from multiprocessing import Pool
 
-from pylint import epylint
+import pytest
 import mypy.api
 import mccabe
+from pylint import epylint
 
 
 ProjectName = "pricky"
 
 
+def iter_py_files(folder):
+    for pyfile in Path(folder).glob('**/*.py'):
+        yield pyfile
+
+
+@pytest.mark.last
 def test_pylint():
-    args = ["--disable=too-few-public-methods",
-            "--const-naming-style=PascalCase"]
-    assert not epylint.lint(ProjectName, args)
+    folders = {
+        ProjectName: ["--disable=too-few-public-methods",
+                      "--const-naming-style=PascalCase"],
+        "tests": ["--disable=too-few-public-methods",
+                  "--disable=missing-docstring",
+                  "--disable=no-self-use",
+                  "--disable=misplaced-comparison-constant",
+                  "--const-naming-style=PascalCase"]
+    }
 
-
-def test_pylint_tests():
-    args = ["--disable=too-few-public-methods",
-            "--disable=missing-docstring",
-            "--disable=no-self-use",
-            "--disable=misplaced-comparison-constant",
-            "--const-naming-style=PascalCase"]
-    assert not epylint.lint(".", args)
+    success = True
+    pool = Pool()
+    for folder, args in folders.items():
+        files_and_args = ((str(filename), args)
+                          for filename in iter_py_files(folder))
+        success &= all(
+            result == 0
+            for result in pool.starmap(epylint.lint, files_and_args)
+        )
+    assert success
 
 
 def test_complexity():
@@ -39,8 +55,8 @@ def test_complexity():
         return True
 
     success = True
-    for filename in Path(ProjectName).glob('**/*.py'):
-        success &= test_complexity_on_module(str(filename), 6)
+    for filepath in iter_py_files(ProjectName):
+        success &= test_complexity_on_module(str(filepath), 6)
     assert success
 
 
