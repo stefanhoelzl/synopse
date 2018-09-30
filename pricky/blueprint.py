@@ -32,7 +32,7 @@ class Blueprint:
             )
 
     def __eq__(self, other: Any) -> bool:
-        if type(other) != type(self):  # pylint: disable=unidiomatic-typecheck
+        if self.__class__ != other.__class__:
             return False
         for attribute in self.AttributeDefinitions:
             if getattr(self, attribute.name) != getattr(other, attribute.name):
@@ -57,7 +57,7 @@ class Blueprint:
                 del self.structure[key]
             elif old is None:
                 self.structure[key] = new
-            elif type(old) != type(new):  # pylint: disable=unidiomatic-typecheck
+            elif old.__class__ != new.__class__:
                 del self.structure[key]
                 self.structure[key] = new
 
