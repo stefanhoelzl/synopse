@@ -1,4 +1,4 @@
-"""pricky"""
+"""synopse"""
 
 from .blueprint import Blueprint
 from .structure import Structure

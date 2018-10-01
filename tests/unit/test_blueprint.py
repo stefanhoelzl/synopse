@@ -1,4 +1,4 @@
-from pricky import Blueprint, Attribute, Structure
+from synopse import Blueprint, Attribute, Structure
 
 
 def create_blueprint_class(**attributes):

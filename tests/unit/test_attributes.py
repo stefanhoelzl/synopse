@@ -1,7 +1,7 @@
 import pytest
 
-from pricky.attributes import Attribute, NamedAttribute
-from pricky.errors import AttributeValidationFailed, RequiredAttributeMissing
+from synopse.attributes import Attribute, NamedAttribute
+from synopse.errors import AttributeValidationFailed, RequiredAttributeMissing
 
 
 class TestAttribute:

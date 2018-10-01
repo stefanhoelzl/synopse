@@ -9,7 +9,10 @@ import mccabe
 from pylint import epylint
 
 
-ProjectName = "pricky"
+import synopse
+
+
+ProjectPath = Path(synopse.__name__)
 
 
 def iter_py_files(folder):
@@ -20,7 +23,7 @@ def iter_py_files(folder):
 @pytest.mark.last
 def test_pylint():
     folders = {
-        ProjectName: ["--disable=too-few-public-methods",
+        ProjectPath: ["--disable=too-few-public-methods",
                       "--const-naming-style=PascalCase"],
         "tests": ["--disable=too-few-public-methods",
                   "--disable=missing-docstring",
@@ -55,13 +58,13 @@ def test_complexity():
         return True
 
     success = True
-    for filepath in iter_py_files(ProjectName):
+    for filepath in iter_py_files(ProjectPath):
         success &= test_complexity_on_module(str(filepath), 6)
     assert success
 
 
 def test_mypy():
-    out, err, result = mypy.api.run(["{}/".format(ProjectName), "--strict"])
+    out, err, result = mypy.api.run(["{}/".format(ProjectPath), "--strict"])
     print(out)
     print(err)
     assert not result

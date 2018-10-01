@@ -1,7 +1,7 @@
 import pytest
 
-from pricky import Structure, Blueprint
-from pricky.lifecycle import Lifecycle
+from synopse import Structure, Blueprint
+from synopse.lifecycle import Lifecycle
 
 
 class TestStructure:
