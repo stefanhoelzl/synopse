@@ -2,17 +2,18 @@ import io
 import contextlib
 from pathlib import Path
 from multiprocessing import Pool
+from collections import namedtuple
 
 import pytest
 import mypy.api
 import mccabe
 from pylint import epylint
 
-
 import synopse
 
 
 ProjectPath = Path(synopse.__name__)
+Complexity = namedtuple("Complexity", "position, function, value")
 
 
 def iter_py_files(folder):
@@ -44,23 +45,25 @@ def test_pylint():
     assert success
 
 
-def test_complexity():
-    def test_complexity_on_module(filename, complexity):
-        output = io.StringIO()
-        with contextlib.redirect_stdout(output):
-            mccabe.main(["-m", str(complexity), filename])
-        output = output.getvalue()
-        if output:
-            print(filename)
-            print(output)
-            print()
-            return False
-        return True
+def get_complexities_of_module(filename):
+    output = io.StringIO()
+    with contextlib.redirect_stdout(output):
+        mccabe.main(["-m0", filename])
+    return (Complexity(line.split()[0], line.split()[1], int(line.split()[2]))
+            for line in output.getvalue().split("\n") if line)
 
-    success = True
+
+def test_complexity():
+    complexities = []
     for filepath in iter_py_files(ProjectPath):
-        success &= test_complexity_on_module(str(filepath), 6)
-    assert success
+        complexities.extend(get_complexities_of_module(str(filepath)))
+
+    print()
+    for complexity in sorted(complexities,
+                             key=lambda c: c.value,
+                             reverse=True):
+        print(complexity)
+    assert 5 >= max(complexity.value for complexity in complexities)
 
 
 def test_mypy():
