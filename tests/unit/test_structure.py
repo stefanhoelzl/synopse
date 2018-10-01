@@ -5,16 +5,15 @@ from synopse.lifecycle import Lifecycle
 
 
 class TestStructure:
-    def test_init_with_dict(self):
-        assert {"key": Blueprint()} == Structure({"key": Blueprint()})
-
-    def test_init_with_dict_containing_positional(self):
+    def test_init_with_args_and_kwargs(self):
         assert {"key": Blueprint(), 0: Blueprint(), 1: Blueprint()} \
-               == Structure({"key": Blueprint(),
-                             "__positional__": (Blueprint(), Blueprint())})
+               == Structure(Blueprint(), Blueprint(), key=Blueprint())
 
     def test_init_with_none(self):
         assert {} == Structure(None)
+
+    def test_init_with_none_as_keyword(self):
+        assert {} == Structure(key=None)
 
     def test_init_with_object(self):
         assert {0: Blueprint()} == Structure(Blueprint())
@@ -23,21 +22,25 @@ class TestStructure:
         assert {0: Blueprint(), 1: Blueprint()} \
                == Structure((Blueprint(), Blueprint()))
 
+    def test_init_with_nested_iterable(self):
+        assert {0: Blueprint(), 1: Blueprint()} \
+               == Structure((Blueprint(), (Blueprint(),)))
+
     def test_eq_with_dict(self):
-        assert {"0": Blueprint(), "key": Blueprint()} \
-               == Structure({"0": Blueprint(), "key": Blueprint()})
+        assert {0: Blueprint(), "key": Blueprint()} \
+               == Structure(Blueprint(), key=Blueprint())
 
     def test_getitem_keyword(self):
-        assert Blueprint() == Structure({"key": Blueprint()})["key"]
+        assert Blueprint() == Structure(key=Blueprint())["key"]
 
     def test_getitem_keyword_default(self):
         assert Structure()["key"] is None
 
     def test_getitem_positional(self):
-        assert Blueprint() == Structure((None, Blueprint(), None))[1]
+        assert Blueprint() == Structure(None, Blueprint(), None)[0]
 
     def test_getitem_positional_default(self):
-        assert Structure((Blueprint(),))[1] is None
+        assert Structure(Blueprint())[1] is None
 
     def test_setitem_keyword(self):
         structure = Structure()
@@ -50,7 +53,7 @@ class TestStructure:
         assert {0: Blueprint()} == structure
 
     def test_setitem_insert_before_if_index_already_used(self):
-        structure = Structure((Blueprint(), Blueprint()))
+        structure = Structure(Blueprint(), Blueprint())
         structure[1] = Blueprint()
         assert {0: Blueprint(), 1: Blueprint(), 2: Blueprint()} == structure
 
@@ -60,26 +63,24 @@ class TestStructure:
             structure[1] = Blueprint()
 
     def test_delitem_from_positional(self):
-        structure = Structure((None, Blueprint(), None))
+        structure = Structure(Blueprint(), Blueprint())
         del structure[1]
-        assert {0: None, 1: None} == structure
+        assert {0: Blueprint()} == structure
 
     def test_delitem_from_keywords(self):
-        structure = Structure({"key": Blueprint(), "another": None})
+        structure = Structure(key=Blueprint(), another=Blueprint())
         del structure["another"]
         assert {"key": Blueprint()} == structure
 
     def test_keys_return_keywords_as_set(self):
         assert {"key", "another"} \
-               == Structure({"key": Blueprint(), "another": Blueprint()}).keys()
+               == Structure(key=Blueprint(), another=Blueprint()).keys()
 
     def test_keys_return_positional_indexes_as_set(self):
-        assert {0, 1} == Structure((Blueprint(), Blueprint())).keys()
+        assert {0, 1} == Structure(Blueprint(), Blueprint()).keys()
 
     def test_key_return_mixed(self):
-        structure = Structure(
-            {"k": Blueprint(), "__positional__": (Blueprint(),)}
-        )
+        structure = Structure(Blueprint(), k=Blueprint())
         assert {"k", 0} == structure.keys()
 
 

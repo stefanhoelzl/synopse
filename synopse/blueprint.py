@@ -3,7 +3,7 @@ from typing import Any, Tuple, Dict, Iterable, Optional
 
 from .attributes import Attribute, NamedAttribute
 from .lifecycle import Lifecycle
-from .structure import Structure, StructureDefinition
+from .structure import Structure, Definition
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) \
@@ -41,7 +41,7 @@ class Blueprint(Lifecycle):
         return True
 
     # pylint: disable=no-self-use
-    def structure_definition(self) -> StructureDefinition:
+    def structure_definition(self) -> Definition:
         """Returns a definition to rebuild the structure"""
         return None
 
@@ -58,13 +58,10 @@ class Blueprint(Lifecycle):
 
     def _update_structure(self, desired_structure: Structure) -> None:
         key_offset = 0
-        for key in set(self.structure.keys()) | set(desired_structure.keys()):
+        for key in self.structure.keys() | desired_structure.keys():
             new = desired_structure[key]
             key = key - key_offset if isinstance(key, int) else key
             old = self.structure[key]
-
-            if new == old:
-                continue
 
             if new is None:
                 del self.structure[key]

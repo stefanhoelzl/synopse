@@ -1,42 +1,35 @@
 """Structure"""
-from typing import Union, Any, Optional, Sequence, List, Dict, Set
+from typing import Union, Any, Optional, Iterable, List, Dict, Set
 
 from .lifecycle import Lifecycle
 
 Key = Union[int, str]
-StructureItem = Optional[Lifecycle]
-StructureDefinition = Optional[Union[StructureItem,
-                                     Sequence[StructureItem],
-                                     Dict[str, StructureItem]]]
+Item = Lifecycle
+Definition = Union[Optional[Item], Iterable[Optional[Item]]]
+
+
+# WORKAROUND: recursive type definition needed
+#  MYPY-731: https://github.com/python/mypy/issues/731
+def _flatten(iterable: Iterable) -> Iterable:
+    for item in iterable:
+        if isinstance(item, Iterable):
+            yield from _flatten(item)
+        else:
+            yield item
 
 
 class Structure:
     """A Structure contains Blueprints accessible by Keys"""
+    def __init__(self, *args: Definition, **kwargs: Optional[Item]) -> None:
+        self._positional_children: List[Item] = [
+            arg for arg in _flatten(args) if arg is not None
+        ]
+        self._keyword_children: Dict[str, Item] = {
+            k: v for k, v in kwargs.items() if v is not None
+        }
 
-    def __init__(self,
-                 structure_definition: StructureDefinition = None) -> None:
-        self._positional_children: List[StructureItem] = []
-        self._keyword_children: Dict[str, StructureItem] = {}
-        self._init_with_structure_definition(structure_definition)
-
-    def _init_with_structure_definition(
-            self, structure_definition: StructureDefinition) -> None:
-        if isinstance(structure_definition, dict):
-            positionals = structure_definition.pop("__positional__", ())
-            self._positional_children = list(positionals)  # type: ignore
-
-            self._keyword_children.update(
-                {key: item for key, item in structure_definition.items()}
-            )
-        elif structure_definition is None:
-            self._keyword_children.update({})
-        elif isinstance(structure_definition, Sequence):
-            self._positional_children = list(structure_definition)
-        else:
-            self._positional_children.append(structure_definition)
-
-    def _asdict(self) -> Dict[Key, StructureItem]:
-        complete_dict: Dict[Key, StructureItem] = {}
+    def _asdict(self) -> Dict[Key, Item]:
+        complete_dict: Dict[Key, Item] = {}
         complete_dict.update({k: v for k, v in self._keyword_children.items()})
         complete_dict.update({
             k: v for k, v in enumerate(self._positional_children)
@@ -49,7 +42,7 @@ class Structure:
     def __eq__(self, other: Any) -> bool:
         return self._asdict().__eq__(other)
 
-    def __getitem__(self, key: Key) -> StructureItem:
+    def __getitem__(self, key: Key) -> Optional[Item]:
         if isinstance(key, int):
             try:
                 return self._positional_children[key]
