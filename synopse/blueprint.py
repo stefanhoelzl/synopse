@@ -48,16 +48,16 @@ class Blueprint(Lifecycle):
     def update(self, target: "Blueprint") -> None:
         """Updates self to match another Blueprint"""
         self._update_attributes(target)
-        target_structure = Structure(target.structure_definition())
-        compareables = (
-            (key, self.structure[key], target_structure[key])
-            for key in set(self.structure.keys()) | set(target_structure.keys())
-        )
+        desired_structure = Structure(self.structure_definition())
         key_offset = 0
-        for key, old, new in compareables:
+        for key in set(self.structure.keys()) | set(desired_structure.keys()):
+            new = desired_structure[key]
             key = key - key_offset if isinstance(key, int) else key
+            old = self.structure[key]
 
-            if new is None:
+            if new == old:
+                continue
+            elif new is None:
                 del self.structure[key]
                 key_offset += 1 if isinstance(key, int) else 0
             elif old is None:

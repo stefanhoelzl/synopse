@@ -22,17 +22,15 @@ class TestBlueprintDescription:
 
     def test_update_attributes(self):
         blueprint_class = create_blueprint_class(my_attr=Attribute())
-        old = blueprint_class(my_attr=True)
-        new = blueprint_class(my_attr=False)
-        old.update(new)
-        assert not old.my_attr
+        blueprint = blueprint_class(my_attr=True)
+        blueprint.update(blueprint_class(my_attr=False))
+        assert not blueprint.my_attr
 
     def test_update_set_new(self):
-        blueprint = Blueprint()
-        target = Blueprint()
-        # pylint: disable=unnecessary-lambda
-        target.structure_definition = lambda: Blueprint()
-        blueprint.update(target)
+        blueprint_class = create_blueprint_class(
+            structure_definition=lambda _self: Blueprint())
+        blueprint = blueprint_class()
+        blueprint.update(blueprint_class())
         assert {0: Blueprint()} == blueprint.structure
 
     def test_update_del_old(self):
@@ -45,15 +43,13 @@ class TestBlueprintDescription:
         new_blueprint = create_blueprint_class()
         blueprint = Blueprint()
         blueprint.structure = Structure((Blueprint(), Blueprint()))
-        target = Blueprint()
-        target.structure_definition = lambda: (new_blueprint(), Blueprint())
-        blueprint.update(target)
+        blueprint.structure_definition = lambda: (new_blueprint(),  Blueprint())
+        blueprint.update(Blueprint())
         assert {0: new_blueprint(), 1: Blueprint()} == blueprint.structure
 
     def test_update_insert_after_delete(self):
         blueprint = Blueprint()
         blueprint.structure = Structure(Blueprint())
-        target = Blueprint()
-        target.structure_definition = lambda: (None, Blueprint())
-        blueprint.update(target)
-        assert {0: None, 1: Blueprint()}
+        blueprint.structure_definition=lambda: (None, Blueprint())
+        blueprint.update(Blueprint())
+        assert {0: Blueprint()} == blueprint.structure
