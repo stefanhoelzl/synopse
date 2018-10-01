@@ -7,7 +7,7 @@ Key = Union[int, str]
 StructureItem = Optional[Lifecycle]
 StructureDefinition = Optional[Union[StructureItem,
                                      Sequence[StructureItem],
-                                     Dict[str, Union[StructureItem]]]]
+                                     Dict[str, StructureItem]]]
 
 
 class Structure:

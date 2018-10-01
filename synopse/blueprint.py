@@ -65,7 +65,8 @@ class Blueprint(Lifecycle):
 
             if new == old:
                 continue
-            elif new is None:
+
+            if new is None:
                 del self.structure[key]
                 key_offset += 1 if isinstance(key, int) else 0
             elif old is None:

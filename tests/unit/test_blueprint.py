@@ -32,8 +32,7 @@ class TestBlueprintDescription:
 
     def test_update_set_new(self):
         blueprint = Blueprint()
-        # pylint: disable=unnecessary-lambda
-        blueprint.structure_definition = lambda: Blueprint()
+        blueprint.structure_definition = lambda: (Blueprint(),)
         blueprint.update()
         assert {0: Blueprint()} == blueprint.structure
 
@@ -57,3 +56,10 @@ class TestBlueprintDescription:
         blueprint.structure_definition = lambda: (None, Blueprint())
         blueprint.update()
         assert {0: Blueprint()} == blueprint.structure
+
+    def test_udate_empty_structure_with_none(self):
+        blueprint = Blueprint()
+        blueprint.structure = Structure()
+        blueprint.structure_definition = lambda: (None,)
+        blueprint.update()
+        assert {} == blueprint.structure
