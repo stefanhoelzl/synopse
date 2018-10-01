@@ -20,6 +20,10 @@ class TestBlueprintDescription:
     def test_neq_if_different_class(self):
         assert create_blueprint_class()() != create_blueprint_class()()
 
+    def test_update_without_target(self):
+        blueprint = Blueprint()
+        blueprint.update()
+
     def test_update_attributes(self):
         blueprint_class = create_blueprint_class(my_attr=Attribute())
         blueprint = blueprint_class(my_attr=True)
@@ -27,29 +31,29 @@ class TestBlueprintDescription:
         assert not blueprint.my_attr
 
     def test_update_set_new(self):
-        blueprint_class = create_blueprint_class(
-            structure_definition=lambda _self: Blueprint())
-        blueprint = blueprint_class()
-        blueprint.update(blueprint_class())
+        blueprint = Blueprint()
+        # pylint: disable=unnecessary-lambda
+        blueprint.structure_definition = lambda: Blueprint()
+        blueprint.update()
         assert {0: Blueprint()} == blueprint.structure
 
     def test_update_del_old(self):
         blueprint = Blueprint()
         blueprint.structure = Structure(Blueprint())
-        blueprint.update(Blueprint())
+        blueprint.update()
         assert {} == blueprint.structure
 
     def test_update_replace_old_with_new(self):
         new_blueprint = create_blueprint_class()
         blueprint = Blueprint()
         blueprint.structure = Structure((Blueprint(), Blueprint()))
-        blueprint.structure_definition = lambda: (new_blueprint(),  Blueprint())
-        blueprint.update(Blueprint())
+        blueprint.structure_definition = lambda: (new_blueprint(), Blueprint())
+        blueprint.update()
         assert {0: new_blueprint(), 1: Blueprint()} == blueprint.structure
 
     def test_update_insert_after_delete(self):
         blueprint = Blueprint()
         blueprint.structure = Structure(Blueprint())
-        blueprint.structure_definition=lambda: (None, Blueprint())
-        blueprint.update(Blueprint())
+        blueprint.structure_definition = lambda: (None, Blueprint())
+        blueprint.update()
         assert {0: Blueprint()} == blueprint.structure

@@ -1,5 +1,5 @@
 """Everything needed to build a Blueprint class"""
-from typing import Any, Tuple, Dict, Iterable
+from typing import Any, Tuple, Dict, Iterable, Optional
 
 from .attributes import Attribute, NamedAttribute
 from .lifecycle import Lifecycle
@@ -45,9 +45,11 @@ class Blueprint(Lifecycle):
         """Returns a definition to rebuild the structure"""
         return None
 
-    def update(self, target: "Blueprint") -> None:
+    def update(self, target: Optional["Blueprint"] = None) -> None:
         """Updates self to match another Blueprint"""
-        self._update_attributes(target)
+        if target is not None:
+            self._update_attributes(target)
+
         desired_structure = Structure(self.structure_definition())
         key_offset = 0
         for key in set(self.structure.keys()) | set(desired_structure.keys()):
