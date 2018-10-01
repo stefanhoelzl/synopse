@@ -49,8 +49,14 @@ class Blueprint(Lifecycle):
         """Updates self to match another Blueprint"""
         if target is not None:
             self._update_attributes(target)
+        self._update_structure(Structure(self.structure_definition()))
 
-        desired_structure = Structure(self.structure_definition())
+    def _update_attributes(self, target: "Blueprint") -> None:
+        for attribute_definition in self.AttributeDefinitions:
+            setattr(self, attribute_definition.name,
+                    getattr(target, attribute_definition.name))
+
+    def _update_structure(self, desired_structure: Structure) -> None:
         key_offset = 0
         for key in set(self.structure.keys()) | set(desired_structure.keys()):
             new = desired_structure[key]
@@ -67,8 +73,3 @@ class Blueprint(Lifecycle):
             elif old.__class__ != new.__class__:
                 del self.structure[key]
                 self.structure[key] = new
-
-    def _update_attributes(self, target: "Blueprint") -> None:
-        for attribute_definition in self.AttributeDefinitions:
-            setattr(self, attribute_definition.name,
-                    getattr(target, attribute_definition.name))
