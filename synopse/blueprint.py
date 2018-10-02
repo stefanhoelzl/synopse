@@ -71,3 +71,5 @@ class Blueprint(Lifecycle):
             elif old.__class__ != new.__class__:
                 del self.structure[key]
                 self.structure[key] = new
+            elif old != new:
+                old.update(new)

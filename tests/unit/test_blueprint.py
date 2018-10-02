@@ -57,9 +57,19 @@ class TestBlueprintDescription:
         blueprint.update()
         assert {0: Blueprint()} == blueprint.structure
 
-    def test_udate_empty_structure_with_none(self):
+    def test_update_empty_structure_with_none(self):
         blueprint = Blueprint()
         blueprint.structure = Structure()
         blueprint.structure_definition = lambda: (None,)
         blueprint.update()
         assert {} == blueprint.structure
+
+    def test_update_recursive(self):
+        blueprint_class = create_blueprint_class(attr=Attribute())
+        blueprint = Blueprint()
+        sub_blueprint = blueprint_class(attr=False)
+        blueprint.structure = Structure(sub_blueprint)
+        blueprint.structure_definition = lambda: blueprint_class(attr=True)
+        blueprint.update()
+        assert {0: sub_blueprint} == blueprint.structure
+        assert sub_blueprint.attr
