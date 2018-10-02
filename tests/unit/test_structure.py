@@ -94,13 +94,16 @@ class LifecycleMock(Lifecycle):
     def unmount(self):
         self.called_hooks.append("unmount")
 
+    def update(self, target=None):
+        self.called_hooks.append("update")
+
 
 class TestStructureLifecycleHooks:
     def test_mount_on_setitem(self):
         structure = Structure()
         lifecycle = LifecycleMock()
         structure["key"] = lifecycle
-        assert ["mount"] == lifecycle.called_hooks
+        assert ["mount", "update"] == lifecycle.called_hooks
 
     def test_unmount_on_delitem(self):
         lifecycle = LifecycleMock()

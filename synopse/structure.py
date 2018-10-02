@@ -58,6 +58,7 @@ class Structure:
         * If key is in use: value is inserted before
         """
         value.mount()
+        value.update()
         if isinstance(key, int):
             if key < len(self._positional_children):
                 self._positional_children.insert(key, value)
