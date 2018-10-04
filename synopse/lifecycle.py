@@ -1,9 +1,9 @@
-"""Describes the Lifecycle of Blueprints"""
+"""Describes the Lifecycle of Components"""
 from typing import Any
 
 
 class Lifecycle:
-    """A Lifecycle of a Blueprint"""
+    """A Lifecycle of a Component"""
     def mount(self) -> None:
         """Called when inserted into a Structure"""
         pass

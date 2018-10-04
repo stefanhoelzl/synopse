@@ -1,13 +1,13 @@
-"""Errors which can be raised when working with Blueprints"""
+"""Errors which can be raised when working with Components"""
 from typing import Any
 
 
-class BlueprintError(Exception):
-    """Base exception for all Blueprint Errors"""
+class ComponentError(Exception):
+    """Base exception for all Component Errors"""
     pass
 
 
-class RequiredAttributeMissing(BlueprintError):
+class RequiredAttributeMissing(ComponentError):
     """Is raised when a required Attributed is missing"""
     def __init__(self, attribute_name: str) -> None:
         super().__init__(
@@ -17,7 +17,7 @@ class RequiredAttributeMissing(BlueprintError):
         )
 
 
-class AttributeValidationFailed(BlueprintError):
+class AttributeValidationFailed(ComponentError):
     """Is raised when an Attribute validation fails"""
     def __init__(self, attribute_name: str, attribute_value: Any) -> None:
         super().__init__(

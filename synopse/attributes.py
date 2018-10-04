@@ -1,4 +1,4 @@
-"""Attributes are used to define features of Blueprints"""
+"""Attributes are used to define features of Components"""
 from typing import Any, Optional, Dict, Union, Callable
 
 from dataclasses import dataclass, asdict

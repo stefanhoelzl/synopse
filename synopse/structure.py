@@ -19,7 +19,7 @@ def _flatten(iterable: Iterable) -> Iterable:
 
 
 class Structure:
-    """A Structure contains Blueprints accessible by Keys"""
+    """A Structure contains Components accessible by Keys"""
     def __init__(self, *args: Definition, **kwargs: Optional[Item]) -> None:
         self._positional_children: List[Item] = [
             arg for arg in _flatten(args) if arg is not None
