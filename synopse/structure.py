@@ -1,28 +1,18 @@
 """Structure"""
-from typing import Union, Any, Optional, Iterable, List, Dict, Set
+from typing import Union, Any, Optional, List, Dict, Set
 
 from .lifecycle import Lifecycle
 
 Key = Union[int, str]
 Item = Lifecycle
-Definition = Union[Optional[Item], Iterable[Optional[Item]]]
-
-
-# WORKAROUND: recursive type definition needed
-#  MYPY-731: https://github.com/python/mypy/issues/731
-def _flatten(iterable: Iterable) -> Iterable:
-    for item in iterable:
-        if isinstance(item, Iterable):
-            yield from _flatten(item)
-        else:
-            yield item
+Definition = Optional[Item]
 
 
 class Structure:
-    """A Structure contains Components accessible by Keys"""
+    """A Structure contains values accessible by Keys"""
     def __init__(self, *args: Definition, **kwargs: Optional[Item]) -> None:
         self._positional_children: List[Item] = [
-            arg for arg in _flatten(args) if arg is not None
+            arg for arg in args if arg is not None
         ]
         self._keyword_children: Dict[str, Item] = {
             k: v for k, v in kwargs.items() if v is not None
@@ -57,8 +47,10 @@ class Structure:
         * If key == len(positionals): value is appended
         * If key is in use: value is inserted before
         """
-        value.mount()
-        value.update()
+        if hasattr(value, "mount"):
+            value.mount()
+        if hasattr(value, "update"):
+            value.update()
         if isinstance(key, int):
             if key < len(self._positional_children):
                 self._positional_children.insert(key, value)
@@ -73,7 +65,7 @@ class Structure:
 
     def __delitem__(self, key: Key) -> None:
         value = self[key]
-        if value is not None:
+        if value is not None and hasattr(value, "unmount"):
             value.unmount()
 
         if isinstance(key, int):
@@ -85,3 +77,23 @@ class Structure:
         """Set of keys defined in this Structure"""
         positional_keys = range(len(self._positional_children))
         return set(self._keyword_children.keys()) | set(positional_keys)
+
+    def update(self, structure: "Structure") -> None:
+        """Updates the structure"""
+        for key in self.keys() | structure.keys():
+            old = self[key]
+            new = structure[key]
+
+            if old == new:
+                return
+
+            if old is None and new is not None:
+                self[key] = new
+            elif new is None:
+                del self[key]
+            elif old is not None and old.__class__ == new.__class__ \
+                    and hasattr(old, "update"):
+                old.update(new)
+            else:
+                del self[key]
+                self[key] = new

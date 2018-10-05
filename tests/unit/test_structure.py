@@ -18,14 +18,6 @@ class TestStructure:
     def test_init_with_object(self):
         assert {0: Component()} == Structure(Component())
 
-    def test_init_with_iterable(self):
-        assert {0: Component(), 1: Component()} \
-               == Structure((Component(), Component()))
-
-    def test_init_with_nested_iterable(self):
-        assert {0: Component(), 1: Component()} \
-               == Structure((Component(), (Component(),)))
-
     def test_eq_with_dict(self):
         assert {0: Component(), "key": Component()} \
                == Structure(Component(), key=Component())
@@ -82,6 +74,48 @@ class TestStructure:
     def test_key_return_mixed(self):
         structure = Structure(Component(), k=Component())
         assert {"k", 0} == structure.keys()
+
+
+class TestStructureUpdate:
+    def test_update_set_new(self):
+        structure = Structure()
+        structure.update(Structure(100))
+        assert {0: 100} == structure
+
+    def test_update_del_old(self):
+        structure = Structure(100)
+        structure.update(Structure())
+        assert {} == structure
+
+    def test_update_replace_old_with_new_if_different_classes(self):
+        structure = Structure(True, 2)
+        structure.update(Structure(3, 2))
+        assert {0: 3, 1: 2} == structure
+
+    def test_update_replace_old_with_new_if_not_updateable(self):
+        structure = Structure(1, 2)
+        structure.update(Structure(3, 2))
+        assert {0: 3, 1: 2} == structure
+
+    def test_update_insert_after_delete(self):
+        structure = Structure(0)
+        structure.update(Structure(None, 1))
+        assert {0: 1} == structure
+
+    def test_update_recursive(self):
+        class ToUpdate:
+            def __init__(self):
+                self.updated_with = None
+
+            def update(self, instance):
+                self.updated_with = instance
+
+        old = ToUpdate()
+        structure = Structure(old)
+        new = ToUpdate()
+        structure.update(Structure(new))
+        assert old is structure[0]
+        assert new == structure[0].updated_with
 
 
 class LifecycleMock(Lifecycle):

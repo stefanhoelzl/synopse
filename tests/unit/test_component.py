@@ -1,4 +1,4 @@
-from synopse import Component, Attribute, Structure
+from synopse import Component, Attribute
 
 
 def create_component_class(**attributes):
@@ -30,46 +30,9 @@ class TestComponentDescription:
         component.update(component_class(my_attr=False))
         assert not component.my_attr
 
-    def test_update_set_new(self):
+    def test_update_structure(self):
         component = Component()
-        component.structure = lambda: (Component(),)
+        # pylint: disable=unnecessary-lambda
+        component.structure = lambda: Component()
         component.update()
         assert {0: Component()} == component.structure_instance
-
-    def test_update_del_old(self):
-        component = Component()
-        component.structure_instance = Structure(Component())
-        component.update()
-        assert {} == component.structure_instance
-
-    def test_update_replace_old_with_new(self):
-        new_component = create_component_class()
-        component = Component()
-        component.structure_instance = Structure((Component(), Component()))
-        component.structure = lambda: (new_component(), Component())
-        component.update()
-        assert {0: new_component(), 1: Component()} == component.structure_instance
-
-    def test_update_insert_after_delete(self):
-        component = Component()
-        component.structure_instance = Structure(Component())
-        component.structure = lambda: (None, Component())
-        component.update()
-        assert {0: Component()} == component.structure_instance
-
-    def test_update_empty_structure_with_none(self):
-        component = Component()
-        component.structure_instance = Structure()
-        component.structure = lambda: (None,)
-        component.update()
-        assert {} == component.structure_instance
-
-    def test_update_recursive(self):
-        component_class = create_component_class(attr=Attribute())
-        component = Component()
-        sub_component = component_class(attr=False)
-        component.structure_instance = Structure(sub_component)
-        component.structure = lambda: component_class(attr=True)
-        component.update()
-        assert {0: sub_component} == component.structure_instance
-        assert sub_component.attr
