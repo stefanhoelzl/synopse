@@ -5,6 +5,5 @@ __license__ = "MIT"
 __version__ = "0.1.0"
 
 from .component import Component
-from .structure import Structure
 from .errors import RequiredAttributeMissing, AttributeValidationFailed
 from .attributes import Attribute

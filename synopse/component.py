@@ -1,57 +1,34 @@
 """Everything needed to build a Component class"""
-from typing import Any, Tuple, Dict, Iterable, Optional
-
-from .attributes import Attribute, NamedAttribute
-from .lifecycle import Lifecycle
-from .structure import Structure, Definition
+from typing import Optional, Any
+from .base_component import BaseComponent
 
 
-def _attributes_of_namespace(namespace: Dict[str, Any]) \
-        -> Iterable[NamedAttribute]:
-    """Yields Attributes in an namespace dict"""
-    for attribute_name, attribute in namespace.items():
-        if isinstance(attribute, Attribute):
-            attribute_dict = attribute.asdict()
-            attribute_dict.update(name=attribute_name)
-            yield NamedAttribute(**attribute_dict)
-
-
-class Component(Lifecycle):
-    """A Component initialized as described with Attributes"""
-    AttributeDefinitions: Tuple[NamedAttribute, ...] = ()
-
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-        cls.AttributeDefinitions = tuple(_attributes_of_namespace(cls.__dict__))
-
+class Component(BaseComponent):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.structure_instance = Structure()
-        for named_attribute in self.AttributeDefinitions:
-            setattr(
-                self, named_attribute.name,
-                named_attribute.extract_value(*args, **kwargs)
-            )
+        super().__init__(*args, **kwargs)
+        self.rendering: Optional[BaseComponent] = None
 
-    def __eq__(self, other: Any) -> bool:
-        if self.__class__ != other.__class__:
-            return False
-        for attribute in self.AttributeDefinitions:
-            if getattr(self, attribute.name) != getattr(other, attribute.name):
-                return False
-        return True
+    def create(self) -> Any:
+        self.rendering = self.render()
+        return self.rendering.create()
 
-    # pylint: disable=no-self-use
-    def structure(self) -> Definition:
-        """Returns a definition to rebuild the structure"""
-        return None
+    def destroy(self) -> None:
+        if self.rendering:
+            self.rendering.destroy()
+        self.rendering = None
 
-    def update(self, target: Optional["Component"] = None) -> None:
+    def update(self, target: "BaseComponent") -> None:
         """Updates self to match another Component"""
-        if target is not None:
-            self._update_attributes(target)
-        self.structure_instance.update(Structure(self.structure()))
+        super().update(target)
+        desired_rendering = self.render()
+        if self.rendering != desired_rendering:
+            self._update_rendering(desired_rendering)
 
-    def _update_attributes(self, target: "Component") -> None:
-        for attribute_definition in self.AttributeDefinitions:
-            setattr(self, attribute_definition.name,
-                    getattr(target, attribute_definition.name))
+    def _update_rendering(self, desired: "BaseComponent") -> None:
+        if self.rendering.__class__ == desired.__class__:
+            self.rendering.update(desired)  # type: ignore
+        else:
+            if self.rendering:
+                self.rendering.destroy()
+            self.rendering = desired
+            self.rendering.create()
