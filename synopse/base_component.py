@@ -1,5 +1,5 @@
 """Everything needed to build a Component class"""
-from typing import Any, Tuple, Dict, Iterable, List
+from typing import Any, Tuple, Dict, Iterable
 
 from .attributes import Attribute, NamedAttribute
 
@@ -17,7 +17,6 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
 class BaseComponent:
     """A Component initialized as described with Attributes"""
     AttributeDefinitions: Tuple[NamedAttribute, ...] = ()
-    ChildrenContainer: List["BaseComponent"] = []
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -38,19 +37,20 @@ class BaseComponent:
                 return False
         return True
 
-    # pylint: disable=no-self-use
-    def render(self) -> "BaseComponent":
-        """Returns a Component"""
-        raise NotImplementedError()
-
-    def create(self) -> Any:
+    def create(self) -> "BaseComponent":
+        """Lifecycle method called when component is created"""
         raise NotImplementedError()
 
     def destroy(self) -> None:
+        """Lifecycle method called when component gets destroyed"""
         raise NotImplementedError()
 
     def update(self, target: "BaseComponent") -> None:
         """Updates self to match another Component"""
         for attribute_definition in self.AttributeDefinitions:
-            setattr(self, attribute_definition.name,
-                    getattr(target, attribute_definition.name))
+            self.update_attribute(attribute_definition.name,
+                                  getattr(target, attribute_definition.name))
+
+    def update_attribute(self, name: str, value: Any) -> None:
+        """Updates a single attribute"""
+        setattr(self, name, value)
