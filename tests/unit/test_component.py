@@ -6,10 +6,11 @@ def create_component_class(**attributes):
 
 
 class ComponentMock:
-    def __init__(self, eq=True, create_returns="ComponentMock"):
+    def __init__(self, eq=True, create_returns="ComponentMock", host="Host"):
         self.create_returns = create_returns
         self.calls = []
         self.equals = eq
+        self.host = host
 
     @property
     def state(self):
@@ -33,7 +34,7 @@ class ComponentMock:
 
 def component_class_rendered_to_mock(mocks=None, **attributes):
     component_class = create_component_class(
-        rendered_mocks=mocks if mocks  else ComponentMock(),
+        rendered_mocks=mocks if mocks else ComponentMock(),
         **attributes
     )
     component_class.render = lambda s: s.rendered_mocks \
@@ -93,3 +94,8 @@ class TestComponent:
         component.update(Component())
         assert "destroyed" == old_rendered.calls[-1]
         assert "created" == new_rendered.calls[-1]
+
+    def test_host_from_rendered(self):
+        component = component_class_rendered_to_mock()()
+        component.create()
+        assert "Host" == component.host

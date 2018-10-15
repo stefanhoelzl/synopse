@@ -37,6 +37,11 @@ class BaseComponent:
                 return False
         return True
 
+    @property
+    def host(self) -> Any:
+        """Host component"""
+        raise NotImplementedError()
+
     def create(self) -> "BaseComponent":
         """Lifecycle method called when component is created"""
         raise NotImplementedError()

@@ -10,6 +10,12 @@ class Component(BaseComponent):
         super().__init__(*args, **kwargs)
         self.rendered: Optional[BaseComponent] = None
 
+    @property
+    def host(self) -> Any:
+        if self.rendered:
+            return self.rendered.host
+        return None
+
     def render(self) -> "Component":
         """TODO"""
         raise NotImplementedError()
