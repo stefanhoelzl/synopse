@@ -1,5 +1,5 @@
 """Everything needed to build a Component class"""
-from typing import Any, Tuple, Dict, Iterable
+from typing import Any, List, Dict, Iterable
 
 from .attributes import Attribute, NamedAttribute
 
@@ -14,48 +14,45 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
             yield NamedAttribute(**attribute_dict)
 
 
+def _attribute_property(name: str) -> property:
+    def wrapper(self: "BaseComponent") -> Any:
+        return self.attributes[name]
+    return property(wrapper)
+
+
 class BaseComponent:
     """A Component initialized as described with Attributes"""
-    AttributeDefinitions: Tuple[NamedAttribute, ...] = ()
+    AttributeDefinitions: List[NamedAttribute] = []
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
-        cls.AttributeDefinitions = tuple(_attributes_of_namespace(cls.__dict__))
+        definitions = []
+        for attribute in _attributes_of_namespace(cls.__dict__):
+            definitions.append(attribute)
+            setattr(cls, attribute.name, _attribute_property(attribute.name))
+        cls.AttributeDefinitions = cls.AttributeDefinitions + definitions
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.attributes: Dict[str, Any] = {}
+
         for named_attribute in self.AttributeDefinitions:
-            setattr(
-                self, named_attribute.name,
+            self.attributes[named_attribute.name] = \
                 named_attribute.extract_value(*args, **kwargs)
-            )
 
     def __eq__(self, other: Any) -> bool:
         if self.__class__ != other.__class__:
             return False
-        for attribute in self.AttributeDefinitions:
-            if getattr(self, attribute.name) != getattr(other, attribute.name):
-                return False
-        return True
+        return bool(self.attributes == other.attributes)
 
     @property
     def host(self) -> Any:
         """Host component"""
         raise NotImplementedError()
 
-    def create(self) -> "BaseComponent":
+    def mount(self) -> "BaseComponent":
         """Lifecycle method called when component is created"""
         raise NotImplementedError()
 
-    def destroy(self) -> None:
+    def unmount(self) -> None:
         """Lifecycle method called when component gets destroyed"""
         raise NotImplementedError()
-
-    def update(self, target: "BaseComponent") -> None:
-        """Updates self to match another Component"""
-        for attribute_definition in self.AttributeDefinitions:
-            self.update_attribute(attribute_definition.name,
-                                  getattr(target, attribute_definition.name))
-
-    def update_attribute(self, name: str, value: Any) -> None:
-        """Updates a single attribute"""
-        setattr(self, name, value)

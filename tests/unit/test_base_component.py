@@ -1,3 +1,5 @@
+import pytest
+
 from synopse import Attribute
 from synopse.base_component import BaseComponent
 
@@ -21,8 +23,12 @@ class TestBaseComponent:
     def test_neq_if_different_class(self):
         assert create_component_class()() != create_component_class()()
 
-    def test_update_attributes(self):
+    def test_attributes_readonly(self):
         component_class = create_component_class(my_attr=Attribute())
         component = component_class(my_attr=True)
-        component.update(component_class(my_attr=False))
-        assert not component.my_attr
+        with pytest.raises(AttributeError):
+            component.my_attr = False
+
+    def test_init_subclass_create_own_copy_of_attribute_definitions(self):
+        create_component_class(my_attr=Attribute())
+        assert [] == BaseComponent.AttributeDefinitions
