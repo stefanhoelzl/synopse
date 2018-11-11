@@ -7,7 +7,7 @@ from .base_component import BaseComponent, Patch, Index
 
 @dataclass
 class Replace(Patch):
-    """Replaces a component with another one"""
+    """Replaces a component with another"""
     old: "BaseComponent"
     new: "BaseComponent"
 
@@ -17,10 +17,6 @@ class Replace(Patch):
 
 class NativeComponent(BaseComponent):
     """Native Component"""
-    @property
-    def native(self) -> Any:
-        return self
-
     def mount(self) -> Any:
         raise NotImplementedError()
 

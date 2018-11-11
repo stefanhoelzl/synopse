@@ -76,11 +76,6 @@ class BaseComponent:
             return False
         return bool(self.attributes == other.attributes)
 
-    @property
-    def native(self) -> Any:
-        """Native component"""
-        raise NotImplementedError()
-
     def mount(self) -> "BaseComponent":
         """Lifecycle method called when component is created"""
         raise NotImplementedError()

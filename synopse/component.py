@@ -1,17 +1,20 @@
 """Everything needed to build a Component class"""
-from typing import Optional, Any, Iterator
+from typing import Optional, Any, Iterator, Union
 from dataclasses import dataclass
 
 from .base_component import BaseComponent, Patch, Attributes, \
     temporary_attributes
-from .native_component import Replace
+from .native_component import NativeComponent, Replace
+
+
+RenderedComponent = Union[NativeComponent, "Component"]
 
 
 @dataclass
 class SetRendering(Patch):
     """Sets the rendered attribute for a Component"""
     component: "Component"
-    rendering: "BaseComponent"
+    rendering: RenderedComponent
 
     def apply(self) -> None:
         self.component.rendered = self.rendering
@@ -21,15 +24,18 @@ class Component(BaseComponent):
     """TODO"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.rendered: Optional[BaseComponent] = None
+        self.rendered: Optional[RenderedComponent] = None
 
     @property
     def native(self) -> Any:
-        if self.rendered:
-            return self.rendered.native
-        return None
+        """Native component"""
+        if self.rendered is None:
+            return None
+        if isinstance(self.rendered, NativeComponent):
+            return self.rendered
+        return self.rendered.native
 
-    def render(self) -> BaseComponent:
+    def render(self) -> RenderedComponent:
         """TODO"""
         raise NotImplementedError()
 
