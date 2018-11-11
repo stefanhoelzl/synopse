@@ -1,6 +1,6 @@
 """Everything needed to build a Component class"""
-from typing import Any, Dict, Optional, Iterator, Tuple
-from collections import namedtuple
+from typing import Any, Dict, Iterator, Tuple
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -34,9 +34,6 @@ def temporary_attributes(component: "BaseComponent", attributes: Attributes) \
     component.attributes = backup
 
 
-Index = namedtuple("Index", "host, slot, position")
-
-
 class Patch:
     """Base class for patch"""
     def apply(self) -> None:
@@ -55,7 +52,7 @@ class SetAttribute(Patch):
         self.component.attributes[self.name] = self.value
 
 
-class BaseComponent:
+class BaseComponent(ABC):
     """A Component initialized as described with Attributes"""
     Attributes: Dict[str, Attribute] = {}
 
@@ -68,7 +65,6 @@ class BaseComponent:
         cls.Attributes = {**cls.Attributes, **attributes}
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.index: Optional[Index] = None
         self.attributes = extract_values(self.Attributes, *args, **kwargs)
 
     def __eq__(self, other: Any) -> bool:
@@ -76,10 +72,12 @@ class BaseComponent:
             return False
         return bool(self.attributes == other.attributes)
 
-    def mount(self) -> "BaseComponent":
+    @abstractmethod
+    def mount(self) -> None:
         """Lifecycle method called when component is created"""
         raise NotImplementedError()
 
+    @abstractmethod
     def unmount(self) -> None:
         """Lifecycle method called when component gets destroyed"""
         raise NotImplementedError()

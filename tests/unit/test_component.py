@@ -1,10 +1,10 @@
 import pytest
 
 from synopse import Component
-from synopse.component import Replace, SetRendering, BaseComponent, Patch
+from synopse.component import Replace, SetRendering, Patch, IndexedComponent
 
 
-class ComponentMock(BaseComponent):
+class ComponentMock(IndexedComponent):
     def __init__(self, eq=True, native="native", diffs=()):
         super().__init__()
         self.calls = []

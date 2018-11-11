@@ -8,7 +8,14 @@ from synopse.base_component import BaseComponent, Patch, SetAttribute, \
 
 
 def create_component_class(**attributes):
-    return type("ComponentToTest", (BaseComponent,), attributes)
+    class BaseComponentToTest(BaseComponent):
+        def mount(self):
+            pass
+
+        def unmount(self):
+            pass
+
+    return type("ComponentToTest", (BaseComponentToTest,), attributes)
 
 
 class TestBaseComponent:
@@ -43,7 +50,7 @@ class TestBaseComponent:
         assert (("attr_a", True),) == tuple(component.diff(attr_a=True))
 
     def test_diff_attribute_yields_set_attribute(self):
-        component = BaseComponent()
+        component = create_component_class()()
         patch = tuple(component.diff_attribute("attr", True))
         assert (SetAttribute(component, "attr", True),) == patch
 
@@ -51,11 +58,12 @@ class TestBaseComponent:
         patches = [Patch(), Patch()]
         patches[0].apply = mock.MagicMock()
         patches[1].apply = mock.MagicMock()
-        component = BaseComponent()
+        component = create_component_class()()
         component.diff = mock.MagicMock(side_effect=(patches,))
 
         component.update(attr=True)
 
+        # pylint: disable=no-member
         component.diff.assert_called_once_with(attr=True)
         patches[0].apply.assert_called_once_with()
         patches[1].apply.assert_called_once_with()
@@ -63,7 +71,7 @@ class TestBaseComponent:
 
 class TestTemporaryComponent:
     def test_set_and_restore_attributes(self):
-        component = BaseComponent()
+        component = create_component_class()()
         component.attributes = {"a": True}
         with temporary_attributes(component, {"b": True}):
             assert {"b": True} == component.attributes

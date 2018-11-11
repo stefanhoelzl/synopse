@@ -2,9 +2,8 @@
 from typing import Optional, Any, Iterator, Union
 from dataclasses import dataclass
 
-from .base_component import BaseComponent, Patch, Attributes, \
-    temporary_attributes
-from .native_component import NativeComponent, Replace
+from .base_component import Patch, Attributes, temporary_attributes
+from .native_component import NativeComponent, Replace, IndexedComponent
 
 
 RenderedComponent = Union[NativeComponent, "Component"]
@@ -20,7 +19,7 @@ class SetRendering(Patch):
         self.component.rendered = self.rendering
 
 
-class Component(BaseComponent):
+class Component(IndexedComponent):
     """TODO"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
