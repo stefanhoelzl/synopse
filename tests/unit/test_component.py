@@ -1,16 +1,18 @@
 from synopse import Component
+from synopse.component import Replace, SetRendering, BaseComponent, Patch
 
 
-def create_component_class(**attributes):
-    return type("ComponentToTest", (Component,), attributes)
-
-
-class ComponentMock:
-    def __init__(self, eq=True, create_returns="ComponentMock", host="Host"):
-        self.create_returns = create_returns
+class ComponentMock(BaseComponent):
+    def __init__(self, eq=True, native="native", diffs=()):
+        super().__init__()
         self.calls = []
         self.equals = eq
-        self.host = host
+        self.diffs = diffs
+        self._native = native
+
+    @property
+    def native(self):
+        return self._native
 
     @property
     def state(self):
@@ -21,81 +23,108 @@ class ComponentMock:
     def __eq__(self, other):
         return self.equals and other.equals
 
-    def create(self):
-        self.calls.append("created")
-        return self.create_returns
+    def mount(self):
+        self.calls.append("mounted")
 
-    def update(self, target):  # pylint: disable=unused-argument
-        self.calls.append("updated")
+    def diff(self, **attributes):
+        yield from self.diffs
 
-    def destroy(self):
-        self.calls.append("destroyed")
+    def unmount(self):
+        self.calls.append("unmounted")
 
 
-def component_class_rendered_to_mock(mocks=None, **attributes):
+def create_component_class(**attributes):
+    return type("ComponentToTest", (Component,), attributes)
+
+
+def component_rendering_mocks(renderings=None):
     component_class = create_component_class(
-        rendered_mocks=mocks if mocks else ComponentMock(),
-        **attributes
+        renderings=renderings if renderings else ComponentMock(),
     )
-    component_class.render = lambda s: s.rendered_mocks \
-        if not isinstance(s.rendered_mocks, list) \
-        else s.rendered_mocks.pop(0)
-    return component_class
+    component_class.render = lambda s: s.renderings \
+        if not isinstance(s.renderings, list) \
+        else s.renderings.pop(0)
+    return component_class()
 
 
 class TestComponent:
-    def test_create_set_rendered(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        assert component.rendered_mocks == component.rendered
+    def test_native_from_rendered(self):
+        component = component_rendering_mocks()
+        component.mount()
+        assert "native" == component.native
 
-    def test_create_recursive(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        assert "created" == component.rendered_mocks.state
+    def test_mount_set_rendered(self):
+        component = component_rendering_mocks()
+        component.mount()
+        assert component.renderings == component.rendered
 
-    def test_create_return_recursive_result(self):
-        component = component_class_rendered_to_mock()()
-        assert "ComponentMock" == component.create()
+    def test_mount_recursive(self):
+        component = component_rendering_mocks()
+        component.mount()
+        assert "mounted" == component.renderings.state
 
-    def test_destroy_recursive(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        component.destroy()
-        assert "destroyed" == component.rendered_mocks.state
+    def test_unmount_recursive(self):
+        component = component_rendering_mocks()
+        component.mount()
+        component.unmount()
+        assert "unmounted" == component.renderings.state
 
-    def test_destroy_set_rendered_to_none(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        component.destroy()
+    def test_unmount_set_rendered_to_none(self):
+        component = component_rendering_mocks()
+        component.mount()
+        component.unmount()
         assert component.rendered is None
 
-    def test_update_skip_if_target_is_same(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        component.update(ComponentMock())
-        assert "created" == component.rendered.state
+    def test_diff_replace_and_set_rendering_when_class_changed(self):
+        class ComponentMockA(ComponentMock):
+            pass
 
-    def test_update_recoursive_if_same_type(self):
-        component = component_class_rendered_to_mock(
-            mocks=ComponentMock(eq=False)
-        )()
-        component.create()
-        component.update(Component())
-        assert "updated" == component.rendered.state
+        class ComponentMockB(ComponentMock):
+            pass
 
-    def test_destroy_and_create_if_different_type(self):
-        old_rendered = ComponentMock(eq=False)
-        new_rendered = type("AnotherMock", (ComponentMock,), {})()
-        component = component_class_rendered_to_mock(
-            mocks=[old_rendered, new_rendered]
-        )()
-        component.create()
-        component.update(Component())
-        assert "destroyed" == old_rendered.calls[-1]
-        assert "created" == new_rendered.calls[-1]
+        old_rendering = ComponentMockA()
+        new_rendering = ComponentMockB()
+        component = component_rendering_mocks(renderings=[old_rendering,
+                                                          new_rendering])
+        component.mount()
+        expected = (Replace(old_rendering, new_rendering),
+                    SetRendering(component, new_rendering))
+        assert expected == tuple(component.diff())
 
-    def test_host_from_rendered(self):
-        component = component_class_rendered_to_mock()()
-        component.create()
-        assert "Host" == component.host
+    def test_diff_yield_from_rendered_diff_when_same_class_but_different(self):
+        diffs = (Patch(), Patch())
+        component = component_rendering_mocks(
+            renderings=ComponentMock(eq=False, diffs=diffs))
+        component.mount()
+        assert diffs == tuple(component.diff())
+
+    def test_diff_nothing_if_equal(self):
+        component = component_rendering_mocks()
+        component.mount()
+        assert () == tuple(component.diff())
+
+    def test_diff_render_with_temporary_attributes(self):
+        class MyTestComponent(Component):
+            def __init__(self):
+                super().__init__()
+                self.rendered = ComponentMock()
+                self.rendering_attributes = None
+
+            def render(self):
+                self.rendering_attributes = self.attributes
+
+        component = MyTestComponent()
+        tuple(component.diff(a=True))
+        assert {"a": True} == component.rendering_attributes
+        assert {} == component.attributes
+
+
+class TestSetRendering:
+    def test_apply_set_rendering_of_component(self):
+        rendering = Component()
+        component = Component()
+        patch = SetRendering(component, rendering)
+
+        patch.apply()
+
+        assert rendering == component.rendered

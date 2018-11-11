@@ -1,7 +1,20 @@
 """Everything needed to build a Component class"""
-from typing import Optional, Any
-from .base_component import BaseComponent
-from .reconciler import Reconciler
+from typing import Optional, Any, Iterator
+from dataclasses import dataclass
+
+from .base_component import BaseComponent, Patch, Attributes, \
+    temporary_attributes
+from .native_component import Replace
+
+
+@dataclass
+class SetRendering(Patch):
+    """Sets the rendered attribute for a Component"""
+    component: "Component"
+    rendering: "BaseComponent"
+
+    def apply(self) -> None:
+        self.component.rendered = self.rendering
 
 
 class Component(BaseComponent):
@@ -11,25 +24,37 @@ class Component(BaseComponent):
         self.rendered: Optional[BaseComponent] = None
 
     @property
-    def host(self) -> Any:
+    def native(self) -> Any:
         if self.rendered:
-            return self.rendered.host
+            return self.rendered.native
         return None
 
-    def render(self) -> "Component":
+    def render(self) -> BaseComponent:
         """TODO"""
         raise NotImplementedError()
 
-    def create(self) -> Any:
+    def mount(self) -> Any:
         self.rendered = self.render()
-        return self.rendered.create()
+        self.rendered.mount()
 
-    def destroy(self) -> None:
+    def unmount(self) -> None:
         if self.rendered:
-            self.rendered.destroy()
+            self.rendered.unmount()
         self.rendered = None
 
-    def update(self, target: "BaseComponent") -> None:
-        """Updates self to match another Component"""
-        super().update(target)
-        self.rendered = Reconciler.reconcile(self.rendered, self.render())
+    def diff(self, **attributes: Any) -> Iterator[Patch]:
+        yield from super().diff(**attributes)
+        yield from self._diff_rendering(attributes)
+
+    def _diff_rendering(self, attributes: Attributes) -> Iterator[Patch]:
+        if self.rendered is None:
+            raise Exception()
+
+        with temporary_attributes(self, attributes):
+            new_rendering = self.render()
+
+        if self.rendered.__class__ != new_rendering.__class__:
+            yield Replace(self.rendered, new_rendering)
+            yield SetRendering(self, new_rendering)
+        elif self.rendered != new_rendering:
+            yield from self.rendered.diff(**new_rendering.attributes)

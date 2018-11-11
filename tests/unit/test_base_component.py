@@ -3,7 +3,8 @@ from unittest import mock
 import pytest
 
 from synopse import Attribute
-from synopse.base_component import BaseComponent, Patch, SetAttribute
+from synopse.base_component import BaseComponent, Patch, SetAttribute, \
+    temporary_attributes
 
 
 def create_component_class(**attributes):
@@ -18,7 +19,7 @@ class TestBaseComponent:
 
     def test_init_subclass_create_own_copy_of_attribute_definitions(self):
         create_component_class(my_attr=Attribute())
-        assert [] == BaseComponent.AttributeDefinitions
+        assert {} == BaseComponent.Attributes
 
     def test_eq_based_on_attributes(self):
         component_class = create_component_class(my_attr=Attribute()[0],
@@ -58,6 +59,15 @@ class TestBaseComponent:
         component.diff.assert_called_once_with(attr=True)
         patches[0].apply.assert_called_once_with()
         patches[1].apply.assert_called_once_with()
+
+
+class TestTemporaryComponent:
+    def test_set_and_restore_attributes(self):
+        component = BaseComponent()
+        component.attributes = {"a": True}
+        with temporary_attributes(component, {"b": True}):
+            assert {"b": True} == component.attributes
+        assert {"a": True} == component.attributes
 
 
 class TestSetAttributePatch:
