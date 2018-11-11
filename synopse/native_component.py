@@ -51,22 +51,27 @@ class Replace(Patch):
         pass
 
 
-class NativeComponent(IndexedComponent):
+class NativeComponent(IndexedComponent, ABC):
     """Native Component"""
+    @abstractmethod
     def mount(self) -> Any:
         raise NotImplementedError()
 
+    @abstractmethod
     def unmount(self) -> None:
         raise NotImplementedError()
 
+    @abstractmethod
     def replace(self, index: Index, new: BaseComponent) -> None:
         """Replaces a subcomponent"""
         raise NotImplementedError()
 
+    @abstractmethod
     def insert(self, item: BaseComponent, index: Index) -> None:
         """Inserts a new subcomponent"""
         raise NotImplementedError()
 
+    @abstractmethod
     def remove(self, item: BaseComponent, index: Index) -> None:
         """Removes a subcomponent"""
         raise NotImplementedError()
