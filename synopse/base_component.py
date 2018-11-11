@@ -1,5 +1,7 @@
 """Everything needed to build a Component class"""
-from typing import Any, List, Dict, Iterable
+from typing import Any, List, Dict, Iterable, Optional
+from collections import namedtuple
+from dataclasses import dataclass
 
 from .attributes import Attribute, NamedAttribute
 
@@ -20,6 +22,27 @@ def _attribute_property(name: str) -> property:
     return property(wrapper)
 
 
+Index = namedtuple("Index", "host, slot, position")
+
+
+class Patch:
+    """Base class for patch"""
+    def apply(self) -> None:
+        """applies a patch"""
+        raise NotImplementedError()
+
+
+@dataclass
+class SetAttribute(Patch):
+    """Sets a attribute of a component"""
+    component: "BaseComponent"
+    name: str
+    value: Any
+
+    def apply(self) -> None:
+        self.component.attributes[self.name] = self.value
+
+
 class BaseComponent:
     """A Component initialized as described with Attributes"""
     AttributeDefinitions: List[NamedAttribute] = []
@@ -33,6 +56,7 @@ class BaseComponent:
         cls.AttributeDefinitions = cls.AttributeDefinitions + definitions
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.index: Optional[Index] = None
         self.attributes: Dict[str, Any] = {}
 
         for named_attribute in self.AttributeDefinitions:
@@ -45,8 +69,8 @@ class BaseComponent:
         return bool(self.attributes == other.attributes)
 
     @property
-    def host(self) -> Any:
-        """Host component"""
+    def native(self) -> Any:
+        """Native component"""
         raise NotImplementedError()
 
     def mount(self) -> "BaseComponent":
@@ -56,3 +80,18 @@ class BaseComponent:
     def unmount(self) -> None:
         """Lifecycle method called when component gets destroyed"""
         raise NotImplementedError()
+
+    def diff(self, **attributes: Any) -> Iterable[Patch]:
+        """Yields difference as patches"""
+        for attr_name, attr_value in attributes.items():
+            if self.attributes.get(attr_name) != attr_value:
+                yield from self.diff_attribute(attr_name, attr_value)
+
+    def diff_attribute(self, name: str, value: Any) -> Iterable[Patch]:
+        """Yields difference as patches"""
+        yield SetAttribute(self, name, value)
+
+    def update(self, **attributes: Any) -> None:
+        """Updates a component"""
+        for patch in self.diff(**attributes):
+            patch.apply()
