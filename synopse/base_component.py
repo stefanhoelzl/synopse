@@ -1,20 +1,18 @@
 """Everything needed to build a Component class"""
-from typing import Any, Dict, Optional, Iterator
+from typing import Any, Dict, Optional, Iterator, Tuple
 from collections import namedtuple
 from contextlib import contextmanager
 from dataclasses import dataclass
 
-from .attributes import Attribute, NamedAttribute
+from .attributes import Attribute, extract_values
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) \
-        -> Iterator[NamedAttribute]:
+        -> Iterator[Tuple[str, Attribute]]:
     """Yields Attributes in an namespace dict"""
     for attribute_name, attribute in namespace.items():
         if isinstance(attribute, Attribute):
-            attribute_dict = attribute.asdict()
-            attribute_dict.update(name=attribute_name)
-            yield NamedAttribute(**attribute_dict)
+            yield attribute_name, attribute
 
 
 def _attribute_property(name: str) -> property:
@@ -59,22 +57,19 @@ class SetAttribute(Patch):
 
 class BaseComponent:
     """A Component initialized as described with Attributes"""
-    Attributes: Dict[str, NamedAttribute] = {}
+    Attributes: Dict[str, Attribute] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         attributes = {}
-        for attribute in _attributes_of_namespace(cls.__dict__):
-            attributes[attribute.name] = attribute
-            setattr(cls, attribute.name, _attribute_property(attribute.name))
+        for name, attribute in _attributes_of_namespace(cls.__dict__):
+            attributes[name] = attribute
+            setattr(cls, name, _attribute_property(name))
         cls.Attributes = {**cls.Attributes, **attributes}
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.index: Optional[Index] = None
-        self.attributes: Attributes = {
-            name: attribute.extract_value(*args, **kwargs)
-            for name, attribute in self.Attributes.items()
-        }
+        self.attributes = extract_values(self.Attributes, *args, **kwargs)
 
     def __eq__(self, other: Any) -> bool:
         if self.__class__ != other.__class__:

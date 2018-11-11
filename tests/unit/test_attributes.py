@@ -1,6 +1,6 @@
 import pytest
 
-from synopse.attributes import Attribute, NamedAttribute
+from synopse.attributes import Attribute, extract_values
 from synopse.errors import AttributeValidationFailed, RequiredAttributeMissing
 
 
@@ -10,41 +10,39 @@ class TestAttribute:
         assert 1 == attr.position
 
 
-class TestNamedAttribute:
-    def test_extract_value_from_keyword_attributes(self):
-        attr = NamedAttribute(name="my_attr")
-        assert 1 == attr.extract_value(my_attr=1)
+class TestExtractValue:
+    def test_from_keyword_attributes(self):
+        assert {"my_attr": 1} == \
+               extract_values({"my_attr": Attribute()}, my_attr=1)
 
-    def test_extract_value_from_positional_attribute(self):
-        attr = NamedAttribute(name="my_attr", position=0)
-        assert 1 == attr.extract_value(1)
+    def test_from_positional_attribute(self):
+        assert {"my_attr": 1} == \
+               extract_values({"my_attr": Attribute(position=0)}, 1)
 
-    def test_extract_value_from_sliced_positional_attribute(self):
-        attr = NamedAttribute(name="my_attr", position=slice(1, 6, 2))
-        assert (1, 3, 5) == attr.extract_value(*tuple(range(9)))
+    def test_from_sliced_positional_attribute(self):
+        assert {"my_attr": (1, 3, 5)} == \
+               extract_values({"my_attr": Attribute(position=slice(1, 6, 2))},
+                              *tuple(range(9)))
 
-    def test_extract_default_value_from_keyword_attributes(self):
-        attr = NamedAttribute(name="my_attr", default=True)
-        assert attr.extract_value()
+    def test_default_value_from_keyword_attributes(self):
+        assert {"my_attr": True} == \
+               extract_values({"my_attr": Attribute(default=True)})
 
-    def test_extract_default_value_from_positional_attributes(self):
-        attr = NamedAttribute(name="my_attr", default=True, position=0)
-        assert attr.extract_value()
+    def test_default_value_from_positional_attributes(self):
+        assert {"my_attr": True} == \
+               extract_values({"my_attr": Attribute(default=True, position=0)})
 
-    def test_extract_value_default(self):
-        attr = NamedAttribute(name="my_attr")
-        assert attr.extract_value() is None
+    def test_default_is_none(self):
+        assert {"my_attr": None} == extract_values({"my_attr": Attribute()})
 
-    def test_extract_value_raises_exception_when_required_and_not_given(self):
-        attr = NamedAttribute(name="my_attr", required=True)
+    def test_raises_exception_when_required_and_not_given(self):
         with pytest.raises(RequiredAttributeMissing):
-            attr.extract_value()
+            extract_values({"my_attr": Attribute(required=True)})
 
-    def test_extract_value_with_successfull_validation(self):
-        attr = NamedAttribute(name="my_attr", validator=lambda a: True)
-        assert attr.extract_value() is None
+    def test_with_successfull_validation(self):
+        assert {"my_attr": None} == \
+               extract_values({"my_attr": Attribute(validator=lambda a: True)})
 
-    def test_extract_value_raises_exception_when_validation_fails(self):
-        attr = NamedAttribute(name="my_attr", validator=lambda a: False)
+    def test_raises_exception_when_validation_fails(self):
         with pytest.raises(AttributeValidationFailed):
-            attr.extract_value()
+            extract_values({"my_attr": Attribute(validator=lambda a: False)})

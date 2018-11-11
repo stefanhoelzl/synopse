@@ -25,27 +25,28 @@ class Attribute:
         return self
 
 
-@dataclass
-class NamedAttribute(Attribute):
-    """Attribute with a name"""
-    name: str = ""
-
-    def extract_value(self, *posattrs: Any, **kwattrs: Any) -> Any:
-        """Extracts the value out of a argument list or keyword arguments
-        Determines whats to extract by position or field.
-        """
-        value = self._get_value(*posattrs, **kwattrs)
+def extract_values(attributes: Dict[str, Attribute],
+                   *posattrs: Any, **kwattrs: Any) -> Any:
+    """Extracts the value out of a argument list or keyword arguments
+    Determines whats to extract by position or field.
+    """
+    values = {}
+    for name, attr in attributes.items():
+        value = _get_value(name, attr, *posattrs, **kwattrs)
         # pylint: disable=not-callable
-        if self.validator and self.validator(value) is False:
-            raise AttributeValidationFailed(self.name, value)
-        return value
+        if attr.validator and attr.validator(value) is False:
+            raise AttributeValidationFailed(name, value)
+        values[name] = value
+    return values
 
-    def _get_value(self, *posattrs: Any, **kwattrs: Any) -> Any:
-        try:
-            if self.position is not None:
-                return posattrs[self.position]
-            return kwattrs[self.name]
-        except (IndexError, KeyError):
-            if self.required:
-                raise RequiredAttributeMissing(self.name)
-            return self.default
+
+def _get_value(name: str, attr: Attribute,
+               *posattrs: Any, **kwattrs: Any) -> Any:
+    try:
+        if attr.position is not None:
+            return posattrs[attr.position]
+        return kwattrs[name]
+    except (IndexError, KeyError):
+        if attr.required:
+            raise RequiredAttributeMissing(name)
+        return attr.default
