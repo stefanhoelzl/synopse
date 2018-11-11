@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 
 from synopse import Attribute
-from synopse.base_component import BaseComponent, Patch, SetAttribute, \
+from synopse.base_component import BaseComponent, SetAttribute, \
     temporary_attributes
 
 
@@ -55,9 +55,7 @@ class TestBaseComponent:
         assert (SetAttribute(component, "attr", True),) == patch
 
     def test_update_apply_diff_patches_and_pass_attributes(self):
-        patches = [Patch(), Patch()]
-        patches[0].apply = mock.MagicMock()
-        patches[1].apply = mock.MagicMock()
+        patches = [mock.MagicMock(), mock.MagicMock()]
         component = create_component_class()()
         component.diff = mock.MagicMock(side_effect=(patches,))
 

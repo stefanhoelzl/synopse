@@ -1,7 +1,8 @@
+from unittest import mock
 import pytest
 
 from synopse import Component
-from synopse.component import Replace, SetRendering, Patch, IndexedComponent
+from synopse.component import Replace, SetRendering, IndexedComponent
 
 
 class ComponentMock(IndexedComponent):
@@ -99,7 +100,7 @@ class TestComponent:
         assert expected == tuple(component.diff())
 
     def test_diff_yield_from_rendered_diff_when_same_class_but_different(self):
-        diffs = (Patch(), Patch())
+        diffs = (mock.MagicMock(), mock.MagicMock())
         component = component_rendering_mocks(
             renderings=ComponentMock(eq=False, diffs=diffs))
         component.mount()

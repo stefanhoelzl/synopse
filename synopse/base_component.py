@@ -34,8 +34,9 @@ def temporary_attributes(component: "BaseComponent", attributes: Attributes) \
     component.attributes = backup
 
 
-class Patch:
+class Patch(ABC):
     """Base class for patch"""
+    @abstractmethod
     def apply(self) -> None:
         """applies a patch"""
         raise NotImplementedError()
