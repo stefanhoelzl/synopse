@@ -1,5 +1,6 @@
 """Everything needed to build a Component class"""
 from typing import Optional, Any, Iterator, Union
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from .base_component import Patch, Attributes, temporary_attributes
@@ -19,7 +20,7 @@ class SetRendering(Patch):
         self.component.rendered = self.rendering
 
 
-class Component(IndexedComponent):
+class Component(IndexedComponent, ABC):
     """TODO"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -34,6 +35,7 @@ class Component(IndexedComponent):
             return self.rendered
         return self.rendered.native
 
+    @abstractmethod
     def render(self) -> RenderedComponent:
         """TODO"""
         raise NotImplementedError()

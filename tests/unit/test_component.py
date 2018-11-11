@@ -40,46 +40,47 @@ def create_component_class(**attributes):
     return type("ComponentToTest", (Component,), attributes)
 
 
-def component_rendering_mocks(renderings=None):
-    component_class = create_component_class(
-        renderings=renderings if renderings else ComponentMock(),
-    )
-    component_class.render = lambda s: s.renderings \
-        if not isinstance(s.renderings, list) \
-        else s.renderings.pop(0)
-    return component_class()
+class ComponentRenderingMocks(Component):
+    def __init__(self, renderings=None):
+        super().__init__()
+        self.renderings = renderings if renderings else ComponentMock()
+
+    def render(self):
+        if isinstance(self.renderings, list):
+            return self.renderings.pop(0)
+        return self.renderings
 
 
 class TestComponent:
     def test_native_from_rendered(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         assert "native" == component.native
 
     def test_mount_set_rendered(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         assert component.renderings == component.rendered
 
     def test_mount_recursive(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         assert "mounted" == component.renderings.state
 
     def test_unmount_recursive(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         component.unmount()
         assert "unmounted" == component.renderings.state
 
     def test_unmount_set_rendered_to_none(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         component.unmount()
         assert component.rendered is None
 
     def test_diff_raise_runtime_error_if_not_mounted(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         with pytest.raises(RuntimeError):
             tuple(component.diff())
 
@@ -92,8 +93,8 @@ class TestComponent:
 
         old_rendering = ComponentMockA()
         new_rendering = ComponentMockB()
-        component = component_rendering_mocks(renderings=[old_rendering,
-                                                          new_rendering])
+        component = ComponentRenderingMocks(renderings=[old_rendering,
+                                                        new_rendering])
         component.mount()
         expected = (Replace(old_rendering, new_rendering),
                     SetRendering(component, new_rendering))
@@ -101,13 +102,13 @@ class TestComponent:
 
     def test_diff_yield_from_rendered_diff_when_same_class_but_different(self):
         diffs = (mock.MagicMock(), mock.MagicMock())
-        component = component_rendering_mocks(
+        component = ComponentRenderingMocks(
             renderings=ComponentMock(eq=False, diffs=diffs))
         component.mount()
         assert diffs == tuple(component.diff())
 
     def test_diff_nothing_if_equal(self):
-        component = component_rendering_mocks()
+        component = ComponentRenderingMocks()
         component.mount()
         assert () == tuple(component.diff())
 
@@ -129,8 +130,8 @@ class TestComponent:
 
 class TestSetRendering:
     def test_apply_set_rendering_of_component(self):
-        rendering = Component()
-        component = Component()
+        rendering = ComponentRenderingMocks()
+        component = ComponentRenderingMocks()
         patch = SetRendering(component, rendering)
 
         patch.apply()
