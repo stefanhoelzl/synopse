@@ -54,7 +54,7 @@ class Component(BaseComponent):
 
     def _diff_rendering(self, attributes: Attributes) -> Iterator[Patch]:
         if self.rendered is None:
-            raise Exception()
+            raise RuntimeError("Component must be mounted before to updating")
 
         with temporary_attributes(self, attributes):
             new_rendering = self.render()

@@ -1,3 +1,5 @@
+import pytest
+
 from synopse import Component
 from synopse.component import Replace, SetRendering, BaseComponent, Patch
 
@@ -74,6 +76,11 @@ class TestComponent:
         component.mount()
         component.unmount()
         assert component.rendered is None
+
+    def test_diff_raise_runtime_error_if_not_mounted(self):
+        component = component_rendering_mocks()
+        with pytest.raises(RuntimeError):
+            tuple(component.diff())
 
     def test_diff_replace_and_set_rendering_when_class_changed(self):
         class ComponentMockA(ComponentMock):
