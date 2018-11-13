@@ -1,8 +1,8 @@
 from unittest import mock
-import pytest
 
 from synopse import CompositeComponent
-from synopse.composite_component import Replace, SetComponent, IndexedComponent
+from synopse.composite_component import IndexedComponent, \
+    CompositeComponentDiff, SetComponent
 
 
 class ComponentMock(IndexedComponent):
@@ -34,10 +34,6 @@ class ComponentMock(IndexedComponent):
 
     def unmount(self):
         self.calls.append("unmounted")
-
-
-def create_component_class(**attributes):
-    return type("ComponentToTest", (CompositeComponent,), attributes)
 
 
 class CompositeComponentDescribingMocks(CompositeComponent):
@@ -79,39 +75,6 @@ class TestComponent:
         component.unmount()
         assert component.component is None
 
-    def test_diff_raise_runtime_error_if_not_mounted(self):
-        component = CompositeComponentDescribingMocks()
-        with pytest.raises(RuntimeError):
-            tuple(component.diff())
-
-    def test_diff_replace_and_set_component_when_class_changed(self):
-        class ComponentMockA(ComponentMock):
-            pass
-
-        class ComponentMockB(ComponentMock):
-            pass
-
-        old_component = ComponentMockA()
-        new_component = ComponentMockB()
-        component = CompositeComponentDescribingMocks(components=[old_component,
-                                                                  new_component])
-        component.mount()
-        expected = (Replace(old_component, new_component),
-                    SetComponent(component, new_component))
-        assert expected == tuple(component.diff())
-
-    def test_diff_yield_from_component_diff_when_same_class_but_different(self):
-        diffs = (mock.MagicMock(), mock.MagicMock())
-        component = CompositeComponentDescribingMocks(
-            components=ComponentMock(eq=False, diffs=diffs))
-        component.mount()
-        assert diffs == tuple(component.diff())
-
-    def test_diff_nothing_if_equal(self):
-        component = CompositeComponentDescribingMocks()
-        component.mount()
-        assert () == tuple(component.diff())
-
     def test_diff_describe_with_temporary_attributes(self):
         class MyTestCompositeComponent(CompositeComponent):
             def __init__(self):
@@ -126,6 +89,15 @@ class TestComponent:
         tuple(component.diff(a=True))
         assert {"a": True} == component.component_attributes
         assert {} == component.attributes
+
+
+class TestCompositeComponentDiff:
+    def test_set_component_when_class_changed(self):
+        changed = mock.MagicMock()
+        composite = mock.MagicMock()
+        expected = SetComponent(composite, changed)
+        assert expected == \
+               tuple(CompositeComponentDiff(composite, changed))[-1]
 
 
 class TestSetcomponent:
