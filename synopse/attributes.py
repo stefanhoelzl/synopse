@@ -1,11 +1,12 @@
 """Attributes are used to define features of Components"""
-from typing import Any, Optional, Dict, Union, Callable
+from typing import Any, Optional, Dict, Union, Callable, Mapping
 
 from dataclasses import dataclass, asdict
 from .errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
 Validator = Callable[[Any], bool]
+Attributes = Dict[str, Any]
 
 
 @dataclass
@@ -25,8 +26,8 @@ class Attribute:
         return self
 
 
-def extract_values(attributes: Dict[str, Attribute],
-                   *posattrs: Any, **kwattrs: Any) -> Any:
+def extract_values(attributes: Mapping[str, Attribute],
+                   *posattrs: Any, **kwattrs: Any) -> Attributes:
     """Extracts the value out of a argument list or keyword arguments
     Determines whats to extract by position or field.
     """

@@ -1,9 +1,11 @@
 """Everything needed to build a Component class"""
+import typing
 from typing import Any, Dict, Iterator, Tuple, Optional, NamedTuple
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from collections import ChainMap
 
-from .attributes import Attribute, extract_values
+from .attributes import Attribute, Attributes, extract_values
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) \
@@ -20,9 +22,6 @@ def _attribute_property(name: str) -> property:
     return property(wrapper)
 
 
-Attributes = Dict[str, Any]
-
-
 @contextmanager
 def temporary_attributes(component: "Component", attributes: Attributes) \
         -> Iterator[None]:
@@ -35,7 +34,7 @@ def temporary_attributes(component: "Component", attributes: Attributes) \
 
 class Component(ABC):
     """A Component initialized as described with Attributes"""
-    Attributes: Dict[str, Attribute] = {}
+    Attributes: typing.ChainMap[str, Attribute] = ChainMap()
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -43,7 +42,7 @@ class Component(ABC):
         for name, attribute in _attributes_of_namespace(cls.__dict__):
             attributes[name] = attribute
             setattr(cls, name, _attribute_property(name))
-        cls.Attributes = {**cls.Attributes, **attributes}
+        cls.Attributes = cls.Attributes.new_child(attributes)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.attributes = extract_values(self.Attributes, *args, **kwargs)
