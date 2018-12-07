@@ -1,8 +1,7 @@
 """Everything needed to build a Component class"""
-from typing import Any, Dict, Iterator, Tuple
+from typing import Any, Dict, Iterator, Tuple, Optional, NamedTuple
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from dataclasses import dataclass
 
 from .attributes import Attribute, extract_values
 
@@ -16,7 +15,7 @@ def _attributes_of_namespace(namespace: Dict[str, Any]) \
 
 
 def _attribute_property(name: str) -> property:
-    def wrapper(self: "BaseComponent") -> Any:
+    def wrapper(self: "Component") -> Any:
         return self.attributes[name]
     return property(wrapper)
 
@@ -25,7 +24,7 @@ Attributes = Dict[str, Any]
 
 
 @contextmanager
-def temporary_attributes(component: "BaseComponent", attributes: Attributes) \
+def temporary_attributes(component: "Component", attributes: Attributes) \
         -> Iterator[None]:
     """Sets temporary attributes for a component"""
     backup = component.attributes
@@ -34,26 +33,7 @@ def temporary_attributes(component: "BaseComponent", attributes: Attributes) \
     component.attributes = backup
 
 
-class Patch(ABC):
-    """Base class for patch"""
-    @abstractmethod
-    def apply(self) -> None:
-        """applies a patch"""
-        raise NotImplementedError()
-
-
-@dataclass
-class SetAttribute(Patch):
-    """Sets a attribute of a component"""
-    component: "BaseComponent"
-    name: str
-    value: Any
-
-    def apply(self) -> None:
-        self.component.attributes[self.name] = self.value
-
-
-class BaseComponent(ABC):
+class Component(ABC):
     """A Component initialized as described with Attributes"""
     Attributes: Dict[str, Attribute] = {}
 
@@ -73,29 +53,41 @@ class BaseComponent(ABC):
             return False
         return bool(self.attributes == other.attributes)
 
-    @abstractmethod
     def mount(self) -> None:
         """Lifecycle method called when component is created"""
+        pass
+
+    def unmount(self) -> None:
+        """Lifecycle method called when component gets destroyed"""
+        pass
+
+    @abstractmethod
+    def layout(self) -> None:
+        """Describes the layout of the component"""
+        raise NotImplementedError()
+
+
+class Index(NamedTuple):
+    """Index used to localize a subcomponent"""
+    key: str
+    position: Optional[int]
+
+
+class NativeComponent(Component, ABC):
+    """Native Component"""
+    @abstractmethod
+    def insert(self,
+               component: "NativeComponent",
+               index: Optional[Index] = None) -> None:
+        """TODO"""
         raise NotImplementedError()
 
     @abstractmethod
-    def unmount(self) -> None:
-        """Lifecycle method called when component gets destroyed"""
+    def replace(self, index: Index, component: "NativeComponent") -> None:
+        """TODO"""
         raise NotImplementedError()
 
-    def diff(self, **attributes: Any) -> Iterator[Patch]:
-        """Yields difference as patches"""
-        for attr_name, attr_value in attributes.items():
-            if self.attributes.get(attr_name) != attr_value:
-                yield from self.diff_attribute(attr_name, attr_value)
-
-    def diff_attribute(self, name: str, value: Any) -> Iterator[Patch]:
-        """Yields difference as patches"""
-        yield SetAttribute(self, name, value)
-
-    # pylint: disable=fixme
-    # TODO: check when attributes are not complete
-    def update(self, **attributes: Any) -> None:
-        """Updates a component"""
-        for patch in self.diff(**attributes):
-            patch.apply()
+    @abstractmethod
+    def remove(self, index: Index) -> None:
+        """TODO"""
+        raise NotImplementedError()

@@ -32,7 +32,7 @@ def extract_values(attributes: Dict[str, Attribute],
     """
     values = {}
     for name, attr in attributes.items():
-        value = _get_value(name, attr, *posattrs, **kwattrs)
+        value = _get_value(name, attr, posattrs, kwattrs)
         # pylint: disable=not-callable
         if attr.validator and attr.validator(value) is False:
             raise AttributeValidationFailed(name, value)
@@ -40,8 +40,7 @@ def extract_values(attributes: Dict[str, Attribute],
     return values
 
 
-def _get_value(name: str, attr: Attribute,
-               *posattrs: Any, **kwattrs: Any) -> Any:
+def _get_value(name: str, attr: Attribute, posattrs: Any, kwattrs: Any) -> Any:
     try:
         if attr.position is not None:
             return posattrs[attr.position]
