@@ -29,6 +29,7 @@ def test_pylint():
         "tests": ["--disable=too-few-public-methods",
                   "--disable=missing-docstring",
                   "--disable=no-self-use",
+                  "--disable=redefined-outer-name",
                   "--disable=misplaced-comparison-constant",
                   "--const-naming-style=PascalCase"]
     }

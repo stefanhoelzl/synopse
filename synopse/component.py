@@ -1,11 +1,10 @@
 """Everything needed to build a Component class"""
 import typing
-from typing import Any, Dict, Iterator, Tuple, Optional, NamedTuple
-from abc import ABC, abstractmethod
-from contextlib import contextmanager
+from typing import Any, Dict, Iterator, Tuple, NamedTuple, Optional, \
+    Generic, TypeVar
 from collections import ChainMap
 
-from .attributes import Attribute, Attributes, extract_values
+from .attributes import Attribute, extract_values
 
 
 def _attributes_of_namespace(namespace: Dict[str, Any]) \
@@ -22,17 +21,17 @@ def _attribute_property(name: str) -> property:
     return property(wrapper)
 
 
-@contextmanager
-def temporary_attributes(component: "Component", attributes: Attributes) \
-        -> Iterator[None]:
-    """Sets temporary attributes for a component"""
-    backup = component.attributes
-    component.attributes = attributes
-    yield
-    component.attributes = backup
+ContentType = TypeVar("ContentType")
 
 
-class Component(ABC):
+class Index(NamedTuple):
+    """Index used to store the location of a component"""
+    host: Any
+    key: str
+    position: Optional[int]
+
+
+class Component(Generic[ContentType]):
     """A Component initialized as described with Attributes"""
     Attributes: typing.ChainMap[str, Attribute] = ChainMap()
 
@@ -46,47 +45,28 @@ class Component(ABC):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.attributes = extract_values(self.Attributes, *args, **kwargs)
+        self.index: Optional[Index] = None
+        self.content: Optional[ContentType] = None
 
     def __eq__(self, other: Any) -> bool:
         if self.__class__ != other.__class__:
             return False
         return bool(self.attributes == other.attributes)
 
-    def mount(self) -> None:
-        """Lifecycle method called when component is created"""
-        pass
+    def mount(self, index: Index) -> Any:
+        """Mounts a component"""
+        self.index = index
+        self.content = self.layout()
 
-    def unmount(self) -> None:
-        """Lifecycle method called when component gets destroyed"""
-        pass
-
-    @abstractmethod
-    def layout(self) -> None:
+    def layout(self) -> ContentType:
         """Describes the layout of the component"""
         raise NotImplementedError()
 
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Updates a component"""
+        self.attributes = extract_values(self.Attributes, *args, **kwargs)
 
-class Index(NamedTuple):
-    """Index used to localize a subcomponent"""
-    key: str
-    position: Optional[int]
-
-
-class NativeComponent(Component, ABC):
-    """Native Component"""
-    @abstractmethod
-    def insert(self,
-               component: "NativeComponent",
-               index: Optional[Index] = None) -> None:
-        """TODO"""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def replace(self, index: Index, component: "NativeComponent") -> None:
-        """TODO"""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def remove(self, index: Index) -> None:
-        """TODO"""
-        raise NotImplementedError()
+    def unmount(self) -> None:
+        """Unmounts a component"""
+        self.index = None
+        self.content = None

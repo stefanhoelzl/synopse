@@ -1,17 +1,28 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from synopse import Attribute
-from synopse.component import Component, temporary_attributes
+from synopse.component import Component, Index
 
 
 def create_component_class(**attributes):
-    class ComponnetToTest(Component):
-        def layout(self):
-            return None
-    return type("ComponentToTest", (ComponnetToTest,), attributes)
+    return type("ComponentToTest", (Component,), attributes)
 
 
-class TestBaseComponent:
+@pytest.fixture
+def component():
+    component = create_component_class()()
+    component.layout = MagicMock(return_value="LAYOUT")
+    return component
+
+
+@pytest.fixture
+def index():
+    return Index(None, "key", 0)
+
+
+class TestComponent:
     def test_init_attribute(self):
         component_class = create_component_class(my_attr=Attribute())
         component = component_class(my_attr=True)
@@ -37,11 +48,26 @@ class TestBaseComponent:
         with pytest.raises(AttributeError):
             component.my_attr = False
 
+    def test_update_attributes(self):
+        component_class = create_component_class(my_attr=Attribute())
+        component = component_class(my_attr=True)
+        component.update(my_attr=False)
+        assert not component.my_attr
 
-class TestTemporaryComponent:
-    def test_set_and_restore_attributes(self):
-        component = create_component_class()()
-        component.attributes = {"a": True}
-        with temporary_attributes(component, {"b": True}):
-            assert {"b": True} == component.attributes
-        assert {"a": True} == component.attributes
+    def test_mount_set_index(self, component, index):
+        component.mount(index)
+        assert component.index is index
+
+    def test_mount_set_content(self, component, index):
+        component.mount(index)
+        assert "LAYOUT" == component.content
+
+    def test_unmount_delete_index(self, component, index):
+        component.mount(index)
+        component.unmount()
+        assert component.index is None
+
+    def test_unmount_delete_content(self, component, index):
+        component.mount(index)
+        component.unmount()
+        assert component.content is None

@@ -6,7 +6,6 @@ from .errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
 Validator = Callable[[Any], bool]
-Attributes = Dict[str, Any]
 
 
 @dataclass
@@ -27,7 +26,7 @@ class Attribute:
 
 
 def extract_values(attributes: Mapping[str, Attribute],
-                   *posattrs: Any, **kwattrs: Any) -> Attributes:
+                   *posattrs: Any, **kwattrs: Any) -> Dict[str, Any]:
     """Extracts the value out of a argument list or keyword arguments
     Determines whats to extract by position or field.
     """
