@@ -53,7 +53,7 @@ class Component(Generic[ContentType]):
             return False
         return bool(self.attributes == other.attributes)
 
-    def mount(self, index: Index) -> Any:
+    def mount(self, index: Optional[Index] = None) -> None:
         """Mounts a component"""
         self.index = index
         self.content = self.layout()
@@ -62,9 +62,10 @@ class Component(Generic[ContentType]):
         """Describes the layout of the component"""
         raise NotImplementedError()
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def update(self, attributes: Optional[Dict[str, Any]] = None) -> None:
         """Updates a component"""
-        self.attributes = extract_values(self.Attributes, *args, **kwargs)
+        if attributes is not None:
+            self.attributes = attributes
 
     def unmount(self) -> None:
         """Unmounts a component"""
