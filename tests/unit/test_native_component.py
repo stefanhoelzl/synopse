@@ -10,7 +10,7 @@ class TestNativeComponent:
         component.attributes = {"a": 1}
         assert component.attributes == component.layout()
 
-    def test_mount_children(self, index):
+    def test_mount_children(self):
         component = NativeComponent()
         component.insert = MagicMock()
         component.layout = MagicMock(
@@ -26,7 +26,7 @@ class TestNativeComponent:
         component.mount(Index(mock_host, "k", 1))
         mock_host.insert.assert_called_once_with("k", 1, component)
 
-    def test_unmount_children(self, index):
+    def test_unmount_children(self):
         component = NativeComponent()
         component.remove = MagicMock()
         key_child, pos_child = MagicMock(), MagicMock()

@@ -1,11 +1,12 @@
 """NativeComponent"""
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Iterator, Tuple
 
 from .component import Component, Index
 from .reconcile import reconcile_dict
 
 
-def _flattened_layout(layout):
+def _flattened_layout(layout: Dict) \
+        -> Iterator[Tuple[str, Optional[int], Component]]:
     for key, child in layout.items():
         if isinstance(child, list):
             for pos, pos_child in enumerate(child):
@@ -37,12 +38,12 @@ class NativeComponent(Component[Dict]):
             child.mount(Index(self, key, pos))
 
     def unmount(self) -> None:
-        for key, pos, child in _flattened_layout(self.content):
+        for _, _, child in _flattened_layout(self.content):
             child.unmount()
         if self.index:
             self.index.host.remove(self.index.key, self.index.position, self)
         super().unmount()
 
-    def update(self, attributes: Optional[Dict[str, Any]] = None):
+    def update(self, attributes: Optional[Dict[str, Any]] = None) -> None:
         super().update(attributes)
         reconcile_dict(self, self.content, self.layout())

@@ -46,7 +46,17 @@ class Component(Generic[ContentType]):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.attributes = extract_values(self.Attributes, *args, **kwargs)
         self.index: Optional[Index] = None
-        self.content: Optional[ContentType] = None
+        self._content: Optional[ContentType] = None
+
+    @property
+    def content(self) -> ContentType:
+        if self._content is None:
+            raise RuntimeError("Component must be mounted")
+        return self._content
+
+    @content.setter
+    def content(self, content: Optional[ContentType]) -> None:
+        self._content = content
 
     def __eq__(self, other: Any) -> bool:
         if self.__class__ != other.__class__:
@@ -56,7 +66,7 @@ class Component(Generic[ContentType]):
     def mount(self, index: Optional[Index] = None) -> None:
         """Mounts a component"""
         self.index = index
-        self.content = self.layout()
+        self._content = self.layout()
 
     def layout(self) -> ContentType:
         """Describes the layout of the component"""
@@ -70,4 +80,4 @@ class Component(Generic[ContentType]):
     def unmount(self) -> None:
         """Unmounts a component"""
         self.index = None
-        self.content = None
+        self._content = None

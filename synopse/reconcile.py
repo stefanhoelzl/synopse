@@ -3,15 +3,15 @@ from typing import Optional, Dict
 from .component import Component, Index
 
 
-def _unmount(item):
+def _unmount(item: Component) -> None:
     item.unmount()
 
 
-def _mount(item, index):
+def _mount(item: Component, index: Optional[Index]) -> None:
     item.mount(index)
 
 
-def _update(old, new):
+def _update(old: Component, new: Component) -> None:
     old.update(new.attributes)
 
 
@@ -34,5 +34,5 @@ def reconcile(index: Optional[Index],
     return old
 
 
-def reconcile_dict(component: Component, old: Dict, new: Dict):
+def reconcile_dict(component: Component, old: Dict, new: Dict) -> None:
     pass

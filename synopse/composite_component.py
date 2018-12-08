@@ -7,7 +7,6 @@ from .reconcile import reconcile
 
 class CompositeComponent(Component[Component]):
     """TODO"""
-
     def mount(self, index: Optional[Index] = None) -> None:
         super().mount(index)
         self.content.mount(index)
@@ -18,7 +17,7 @@ class CompositeComponent(Component[Component]):
 
     def update(self, attributes: Optional[Dict[str, Any]] = None) -> None:
         super().update(attributes)
-        self.content = reconcile(self.index, self.content, self.layout())
+        self._content = reconcile(self.index, self.content, self.layout())
 
     def layout(self) -> Component:
         raise NotImplementedError()

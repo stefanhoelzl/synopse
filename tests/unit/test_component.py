@@ -17,6 +17,10 @@ class TestComponent:
         create_component_class(my_attr=Attribute())
         assert {} == Component.Attributes
 
+    def test_content_require_being_mounted_for_access(self, component):
+        with pytest.raises(RuntimeError):
+            assert component.content
+
     def test_eq_based_on_attributes(self, create_component_class):
         component_class = create_component_class(
             my_attr=Attribute()[0], another_attr=Attribute()[1]
@@ -62,4 +66,5 @@ class TestComponent:
     def test_unmount_delete_content(self, component):
         component.mount()
         component.unmount()
-        assert component.content is None
+        with pytest.raises(RuntimeError):
+            assert component.content
