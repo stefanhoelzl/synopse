@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from synopse.component import Index
 from synopse.native_component import NativeComponent
@@ -42,3 +42,11 @@ class TestNativeComponent:
         component.index = Index(mock_host, "k", 1)
         component.unmount()
         mock_host.remove.assert_called_once_with("k", 1, component)
+
+    def test_update_reconciles_content(self):
+        component = NativeComponent()
+        component.content = {"o": "OLD"}
+        component.layout = MagicMock(return_value={"n": "NEW"})
+        with patch("synopse.native_component.reconcile_dict") as reconcile:
+            component.update()
+        reconcile.assert_called_once_with(component, {"o": "OLD"}, {"n": "NEW"})

@@ -2,7 +2,7 @@
 from typing import Dict, Optional, Any
 
 from .component import Component, Index
-from .reconcile import reconcile
+from .reconcile import reconcile_dict
 
 
 def _flattened_layout(layout):
@@ -45,8 +45,4 @@ class NativeComponent(Component[Dict]):
 
     def update(self, attributes: Optional[Dict[str, Any]] = None):
         super().update(attributes)
-        layout = self.layout()
-        for key, pos, child in _flattened_layout(self.content):
-            self.content[key] = reconcile(
-                Index(self, key, pos), self.content[key], layout.get(key)
-            )
+        reconcile_dict(self, self.content, self.layout())
