@@ -64,7 +64,7 @@ def test_complexity():
                              key=lambda c: c.value,
                              reverse=True):
         print(complexity)
-    assert 5 >= max(complexity.value for complexity in complexities)
+    assert 6 >= max(complexity.value for complexity in complexities)
 
 
 def test_mypy():

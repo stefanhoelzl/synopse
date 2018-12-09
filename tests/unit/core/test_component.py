@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from synopse.core.attributes import Attribute
-from synopse.core.component import Component
 
 
 class TestComponent:
