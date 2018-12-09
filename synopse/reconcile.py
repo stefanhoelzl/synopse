@@ -1,13 +1,52 @@
 """Reconciliation algorithms"""
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 from itertools import zip_longest
 
 
 from .component import Component, Index
 
 
-def reconcile() -> None:
-    pass
+Reconcileable = Union[None, Component, List]
+
+
+def reconcile(host: Component, key: str, position: Optional[int],
+              old: Reconcileable, new: Reconcileable) -> Reconcileable:
+    """Dispatches to the matching reconciliation algorithm"""
+    if old is None and new is not None:
+        return _mounted(host, key, position, new)
+
+    if new is None and old is not None:
+        return _unmounted(host, key, old)
+
+    if isinstance(old, list) != isinstance(new, list):
+        _unmounted(host, key, old)
+        return _mounted(host, key, None, new)
+
+    if isinstance(old, list) and isinstance(new, list):
+        return reconcile_list(host, key, old, new)
+
+    if isinstance(old, Component) and isinstance(new, Component):
+        return reconcile_components(old, new)
+
+    return None
+
+
+def _mounted(host: Component, key: str, position: Optional[int],
+             reconcileable: Reconcileable) -> Reconcileable:
+    if isinstance(reconcileable, list):
+        return reconcile_list(host, key, [], reconcileable)
+    if reconcileable is not None:
+        reconcileable.mount(Index(host, key, position))
+    return reconcileable
+
+
+def _unmounted(host: Component, key: str, reconcileable: Reconcileable) \
+        -> Reconcileable:
+    if isinstance(reconcileable, list):
+        return reconcile_list(host, key, reconcileable, [])
+    if reconcileable is not None:
+        reconcileable.unmount()
+    return None
 
 
 def reconcile_components(old: Component, new: Component) \
@@ -43,15 +82,12 @@ def reconcile_dicts(host: Component, old: Dict, new: Dict) -> Dict:
     * Items not in new but in the old gets unmounted.
     """
     reconciled_dict = {}
-    for key, item in new.items():
-        if key not in old:
-            reconciled_dict[key] = item
-            item.mount(Index(host, key, None))
-        else:
-            item = old.pop(key)
-            reconciled_dict[key] = reconcile_components(item, new[key])
-    for item in old.values():
-        item.unmount()
+    for key, new_child in new.items():
+        reconciled = reconcile(host, key, None, old.pop(key, None), new_child)
+        if reconciled is not None:
+            reconciled_dict[key] = reconciled
+    for new_child in old.values():
+        new_child.unmount()
     return reconciled_dict
 
 
@@ -63,14 +99,9 @@ def reconcile_list(host: Component, key: str, old: List, new: List) -> List:
     * only a item in old -> unmount old
     * items in both      -> reconcile components
     """
-    reconciled_list = []
     zipped = zip_longest(old, new, fillvalue=None)
-    for ndx, (old_item, new_item) in enumerate(zipped):
-        if old_item is None:
-            reconciled_list.append(new_item)
-            new_item.mount(Index(host, key, ndx))
-        elif new_item is None:
-            old_item.unmount()
-        else:
-            reconciled_list.append(reconcile_components(old_item, new_item))
-    return reconciled_list
+    reconciled_list = [
+        reconcile(host, key, ndx, old_item, new_item)
+        for ndx, (old_item, new_item) in enumerate(zipped)
+    ]
+    return [r for r in reconciled_list if r is not None]

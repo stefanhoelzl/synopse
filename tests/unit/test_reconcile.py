@@ -5,7 +5,57 @@ from synopse.reconcile import reconcile, \
     reconcile_components, reconcile_dicts, reconcile_list
 
 
-reconcile_components_fn = "synopse.reconcile.reconcile_components"
+ReconcileComponentsFn = "synopse.reconcile.reconcile_components"
+ReconcileListFn = "synopse.reconcile.reconcile_list"
+
+
+class TestReconcile:
+    def test_old_is_none_mount_new_component(self, component):
+        new = Component()
+        new.mount = MagicMock()
+        assert new == reconcile(component, "k", 0, None, new)
+        new.mount.assert_called_once_with(Index(component, "k", 0))
+
+    def test_old_is_none_mount_list(self, component):
+        new = [Component(), Component()]
+        with patch(ReconcileListFn, return_value="reconciled") as mock:
+            assert "reconciled" == reconcile(component, "k", None, None, new)
+        mock.assert_called_once_with(component, "k", [], new)
+
+    def test_new_is_none_unmount_old_component(self, component):
+        old = Component()
+        old.unmount = MagicMock()
+        assert reconcile(component, "k", 0, old, None) is None
+        old.unmount.assert_called_once()
+
+    def test_new_is_none_unmount_old_list(self, component):
+        old = [Component(), Component()]
+        with patch(ReconcileListFn, return_value="reconciled") as mock:
+            assert "reconciled" == reconcile(component, "k", None, old, None)
+        mock.assert_called_once_with(component, "k", old, [])
+
+    def test_old_list_new_not_unmount_old_mount_new(self, component):
+        old_0, old_1 = Component(), Component()
+        old = [old_0, old_1]
+        new = Component()
+        new.mount = MagicMock()
+        old_0.unmount = MagicMock()
+        old_1.unmount = MagicMock()
+        assert new == reconcile(component, "k", 0, old, new)
+        new.mount.assert_called_once_with(Index(component, "k", None))
+        old_0.unmount.assert_called_once()
+        old_1.unmount.assert_called_once()
+
+    def test_reconcile_lists(self, component):
+        with patch(ReconcileListFn, return_value="reconciled") as mock:
+            assert "reconciled" == reconcile(component, "k", None, [], [])
+        mock.assert_called_once_with(component, "k", [], [])
+
+    def test_reconcile_components(self, component):
+        new, old = Component(), Component()
+        with patch(ReconcileComponentsFn, return_value="reconciled") as mock:
+            assert "reconciled" == reconcile(component, "k", None, old, new)
+        mock.assert_called_once_with(old, new)
 
 
 class TestReconcileComponents:
@@ -46,7 +96,7 @@ class TestReconcileDicts:
     def test_reconcile_existing_key(self, component):
         new = Component()
         old = Component()
-        with patch(reconcile_components_fn, return_value="reconciled") as mock:
+        with patch(ReconcileComponentsFn, return_value="reconciled") as mock:
             assert {"k": "reconciled"} == reconcile_dicts(
                 component, {"k": old}, {"k": new}
             )
@@ -74,7 +124,7 @@ class TestReconcileList:
 
     def test_reconcile_if_both(self, component):
         old, new = Component(), Component()
-        with patch(reconcile_components_fn, return_value="reconciled") as mock:
+        with patch(ReconcileComponentsFn, return_value="reconciled") as mock:
             assert ["reconciled"] == reconcile_list(
                 component, "k", [old], [new]
             )
