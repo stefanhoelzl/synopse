@@ -1,3 +1,4 @@
+"""Reconciliation algorithms"""
 from typing import Optional, Dict
 
 from .component import Component, Index
@@ -18,6 +19,7 @@ def _update(old: Component, new: Component) -> None:
 def reconcile(index: Optional[Index],
               old: Optional[Component], new: Optional[Component]) \
         -> Optional[Component]:
+    """Reconciles two Components for a given index"""
     if new is None and old is not None:
         _unmount(old)
         return None
@@ -35,4 +37,7 @@ def reconcile(index: Optional[Index],
 
 
 def reconcile_dict(component: Component, old: Dict, new: Dict) -> None:
-    pass
+    """Reconciles all components for two given dictionaries"""
+    assert component
+    assert old
+    assert new

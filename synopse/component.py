@@ -50,6 +50,7 @@ class Component(Generic[ContentType]):
 
     @property
     def content(self) -> ContentType:
+        """Guard to assure the component is mounted"""
         if self._content is None:
             raise RuntimeError("Component must be mounted")
         return self._content
