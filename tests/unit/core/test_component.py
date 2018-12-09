@@ -7,11 +7,6 @@ from synopse.core.component import Component
 
 
 class TestComponent:
-    def test_init_subclass_create_own_copy_of_attribute_definitions(
-            self, create_component_class):
-        create_component_class(my_attr=Attribute())
-        assert {} == Component.Attributes
-
     def test_content_require_being_mounted_for_access(self, component):
         with pytest.raises(RuntimeError):
             assert component.content
