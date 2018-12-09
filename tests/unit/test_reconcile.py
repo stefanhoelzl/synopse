@@ -1,7 +1,7 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from synopse.component import Component
-from synopse.reconcile import reconcile
+from synopse.component import Component, Index
+from synopse.reconcile import reconcile, reconcile_dict
 
 
 class TestReconcile:
@@ -30,3 +30,27 @@ class TestReconcile:
         new = Component()
         assert old == reconcile(old, new)
         old.update.assert_not_called()
+
+
+class TestReconcileDict:
+    def test_mount_new_key(self, component):
+        new = Component()
+        new.mount = MagicMock()
+        assert {"k": new} == reconcile_dict(component, {}, {"k": new})
+        new.mount.assert_called_once_with(Index(component, "k", None))
+
+    def test_reconcile_existing_key(self, component):
+        new = Component()
+        old = Component()
+        with patch("synopse.reconcile.reconcile") as mock:
+            mock.return_value = "reconciled"
+            assert {"k": "reconciled"} == reconcile_dict(
+                component, {"k": old}, {"k": new}
+            )
+        mock.assert_called_once_with(old, new)
+
+    def test_unmount_unused_old_key(self, component):
+        old = Component()
+        old.unmount = MagicMock()
+        assert {} == reconcile_dict(component, {"k": old}, {})
+        old.unmount.assert_called_once()

@@ -57,4 +57,5 @@ class NativeComponent(Component[Dict]):
     def update(self, attributes: Optional[Dict[str, Any]] = None) -> None:
         """Updates itself and all its children"""
         super().update(attributes)
-        reconcile_dict(self, self.content, self.layout())
+        # pylint: disable=attribute-defined-outside-init
+        self.content = reconcile_dict(self, self.content, self.layout())
