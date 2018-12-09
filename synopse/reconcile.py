@@ -1,43 +1,24 @@
 """Reconciliation algorithms"""
-from typing import Optional, Dict
+from typing import Dict
 
-from .component import Component, Index
-
-
-def _unmount(item: Component) -> None:
-    item.unmount()
+from .component import Component
 
 
-def _mount(item: Component, index: Optional[Index]) -> None:
-    item.mount(index)
-
-
-def _update(old: Component, new: Component) -> None:
-    old.update(new.attributes)
-
-
-def reconcile(index: Optional[Index],
-              old: Optional[Component], new: Optional[Component]) \
-        -> Optional[Component]:
-    """Reconciles two Components for a given index"""
-    if new is None and old is not None:
-        _unmount(old)
-        return None
-
-    if (old is None or old.__class__ != new.__class__) and new is not None:
-        if old is not None:
-            index = old.index
-            _unmount(old)
-        _mount(new, index)
+def reconcile(old: Component, new: Component) \
+        -> Component:
+    """Reconciles two Components"""
+    if old.__class__ != new.__class__:
+        old.unmount()
+        new.mount(old.index)
         return new
 
-    if old != new and old is not None and new is not None:
-        _update(old, new)
+    if old != new:
+        old.update(new.attributes)
     return old
 
 
-def reconcile_dict(component: Component, old: Dict, new: Dict) -> None:
+def reconcile_dict(host: Component, old: Dict, new: Dict) -> None:
     """Reconciles all components for two given dictionaries"""
-    assert component
+    assert host
     assert old
     assert new

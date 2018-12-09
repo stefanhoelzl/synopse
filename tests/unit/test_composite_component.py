@@ -23,4 +23,4 @@ class TestCompositeComponent:
                    return_value="RECONCILED") as reconcile:
             composite_component.update()
         assert "RECONCILED" == composite_component.content
-        reconcile.assert_called_once_with(index, "OLD", "NEW")
+        reconcile.assert_called_once_with("OLD", "NEW")
