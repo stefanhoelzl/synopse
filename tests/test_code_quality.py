@@ -68,7 +68,11 @@ def test_complexity():
 
 
 def test_mypy():
-    out, err, result = mypy.api.run(["{}/".format(ProjectPath), "--strict"])
+    out, err, result = mypy.api.run(
+        ["{}/".format(ProjectPath),
+         "--strict",
+         "--namespace-packages"]
+    )
     print(out)
     print(err)
     assert not result

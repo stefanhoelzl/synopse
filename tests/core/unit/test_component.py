@@ -7,11 +7,6 @@ from synopse.core.component import Component
 
 
 class TestComponent:
-    def test_init_attribute(self, create_component_class):
-        component_class = create_component_class(my_attr=Attribute())
-        component = component_class(my_attr=True)
-        assert component.my_attr is True
-
     def test_init_subclass_create_own_copy_of_attribute_definitions(
             self, create_component_class):
         create_component_class(my_attr=Attribute())
@@ -23,12 +18,6 @@ class TestComponent:
 
     def test_neq_if_different_class(self, create_component_class):
         assert create_component_class()() != create_component_class()()
-
-    def test_attributes_readonly(self, create_component_class):
-        component_class = create_component_class(my_attr=Attribute())
-        component = component_class(my_attr=True)
-        with pytest.raises(AttributeError):
-            component.my_attr = False
 
     def test_update_attributes(self, create_component_class):
         component_class = create_component_class(my_attr=Attribute())

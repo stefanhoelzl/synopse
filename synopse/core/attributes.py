@@ -1,7 +1,11 @@
 """Attributes are used to define features of Components"""
+import typing
 from typing import Any, Optional, Dict, Union, Callable, Mapping
-
+from collections import ChainMap
 from dataclasses import dataclass, asdict
+
+from synopse.helper.capture import capture
+
 from .errors import RequiredAttributeMissing, AttributeValidationFailed
 
 
@@ -25,11 +29,25 @@ class Attribute:
         return self
 
 
-def extract_values(attributes: Mapping[str, Attribute],
-                   *posattrs: Any, **kwattrs: Any) -> Dict[str, Any]:
-    """Extracts the value out of a argument list or keyword arguments
-    Determines whats to extract by position or field.
-    """
+class AttributeMixin:
+    Attributes: typing.ChainMap[str, Attribute] = ChainMap()
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        capture(cls, "Attributes", Attribute, _attribute_property)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.attributes = _extract_values(self.Attributes, *args, **kwargs)
+
+
+def _attribute_property(name: str) -> property:
+    def wrapper(self: AttributeMixin) -> Any:
+        return self.attributes[name]
+    return property(wrapper)
+
+
+def _extract_values(attributes: Mapping[str, Attribute],
+                    *posattrs: Any, **kwattrs: Any) -> Dict[str, Any]:
     values = {}
     for name, attr in attributes.items():
         value = _get_value(name, attr, posattrs, kwattrs)
