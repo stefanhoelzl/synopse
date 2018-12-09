@@ -21,13 +21,6 @@ class TestComponent:
         with pytest.raises(RuntimeError):
             assert component.content
 
-    def test_eq_based_on_attributes(self, create_component_class):
-        component_class = create_component_class(
-            my_attr=Attribute()[0], another_attr=Attribute()[1]
-        )
-        assert component_class("Test", 100) == component_class("Test", 100)
-        assert component_class("Test", 100) != component_class("Test", 101)
-
     def test_neq_if_different_class(self, create_component_class):
         assert create_component_class()() != create_component_class()()
 

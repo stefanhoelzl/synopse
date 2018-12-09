@@ -59,11 +59,6 @@ class Component(Generic[ContentType]):
     def content(self, content: Optional[ContentType]) -> None:
         self._content = content
 
-    def __eq__(self, other: Any) -> bool:
-        if self.__class__ != other.__class__:
-            return False
-        return bool(self.attributes == other.attributes)
-
     def mount(self, index: Optional[Index] = None) -> None:
         """Mounts a component"""
         self.index = index
