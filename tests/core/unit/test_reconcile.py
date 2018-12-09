@@ -1,12 +1,12 @@
 from unittest.mock import MagicMock, patch
 
-from synopse.component import Component, Index
-from synopse.reconcile import reconcile, \
+from synopse.core.component import Component, Index
+from synopse.core.reconcile import reconcile, \
     reconcile_components, reconcile_dicts, reconcile_list
 
 
-ReconcileComponentsFn = "synopse.reconcile.reconcile_components"
-ReconcileListFn = "synopse.reconcile.reconcile_list"
+ReconcileComponentsFn = "synopse.core.reconcile.reconcile_components"
+ReconcileListFn = "synopse.core.reconcile.reconcile_list"
 
 
 class TestReconcile:

@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock, patch
 
 
+ReconcileComponentsFn = "synopse.core.composite_component.reconcile_components"
+
+
 class TestCompositeComponent:
     def test_mount_calls_and_returns_content_mount(
             self, composite_component, index):
@@ -19,8 +22,7 @@ class TestCompositeComponent:
         composite_component.index = index
         composite_component.content = "OLD"
         composite_component.layout = MagicMock(return_value="NEW")
-        with patch("synopse.composite_component.reconcile_components",
-                   return_value="RECONCILED") as reconcile:
+        with patch(ReconcileComponentsFn, return_value="recon") as reconcile:
             composite_component.update()
-        assert "RECONCILED" == composite_component.content
+        assert "recon" == composite_component.content
         reconcile.assert_called_once_with("OLD", "NEW")

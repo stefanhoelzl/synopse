@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from synopse.component import Component, Index
-from synopse.composite_component import CompositeComponent
+from synopse.core.component import Component, Index
+from synopse.core.composite_component import CompositeComponent
 
 
 @pytest.fixture

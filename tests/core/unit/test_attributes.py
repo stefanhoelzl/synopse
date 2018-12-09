@@ -1,7 +1,8 @@
 import pytest
 
-from synopse.attributes import Attribute, extract_values
-from synopse.errors import AttributeValidationFailed, RequiredAttributeMissing
+from synopse.core.attributes import Attribute, extract_values
+from synopse.core.errors import AttributeValidationFailed, \
+    RequiredAttributeMissing
 
 
 class TestAttribute:

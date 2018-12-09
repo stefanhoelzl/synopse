@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-from synopse.component import Index
-from synopse.native_component import NativeComponent
+from synopse.core.component import Index
+from synopse.core.native_component import NativeComponent
+
+
+ReconcileDictFn = "synopse.core.native_component.reconcile_dicts"
 
 
 class TestNativeComponent:
@@ -47,6 +50,6 @@ class TestNativeComponent:
         component = NativeComponent()
         component.content = {"o": "OLD"}
         component.layout = MagicMock(return_value={"n": "NEW"})
-        with patch("synopse.native_component.reconcile_dicts") as reconcile:
+        with patch(ReconcileDictFn) as reconcile:
             component.update()
         reconcile.assert_called_once_with(component, {"o": "OLD"}, {"n": "NEW"})
