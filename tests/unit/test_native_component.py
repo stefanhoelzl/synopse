@@ -47,6 +47,6 @@ class TestNativeComponent:
         component = NativeComponent()
         component.content = {"o": "OLD"}
         component.layout = MagicMock(return_value={"n": "NEW"})
-        with patch("synopse.native_component.reconcile_dict") as reconcile:
+        with patch("synopse.native_component.reconcile_dicts") as reconcile:
             component.update()
         reconcile.assert_called_once_with(component, {"o": "OLD"}, {"n": "NEW"})

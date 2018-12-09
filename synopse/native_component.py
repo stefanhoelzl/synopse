@@ -2,7 +2,7 @@
 from typing import Dict, Optional, Any, Iterator, Tuple
 
 from .component import Component, Index
-from .reconcile import reconcile_dict
+from .reconcile import reconcile_dicts
 
 
 def _flattened_layout(layout: Dict) \
@@ -58,4 +58,4 @@ class NativeComponent(Component[Dict]):
         """Updates itself and all its children"""
         super().update(attributes)
         # pylint: disable=attribute-defined-outside-init
-        self.content = reconcile_dict(self, self.content, self.layout())
+        self.content = reconcile_dicts(self, self.content, self.layout())

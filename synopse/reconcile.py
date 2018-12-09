@@ -4,7 +4,7 @@ from typing import Dict
 from .component import Component, Index
 
 
-def reconcile(old: Component, new: Component) \
+def reconcile_components(old: Component, new: Component) \
         -> Component:
     """Reconciles two Components
 
@@ -24,14 +24,14 @@ def reconcile(old: Component, new: Component) \
     return old
 
 
-def reconcile_dict(host: Component, old: Dict, new: Dict) -> Dict:
+def reconcile_dicts(host: Component, old: Dict, new: Dict) -> Dict:
     """Reconciles all components for two given dictionaries
 
     Components not in the new dict but in the old gets unmounted.
 
     New components get mounted.
 
-    Different componnets under the same key are reconciled.
+    Different components under the same key are reconciled.
     """
     reconciled_dict = {}
     for key, item in new.items():
@@ -40,7 +40,7 @@ def reconcile_dict(host: Component, old: Dict, new: Dict) -> Dict:
             item.mount(Index(host, key, None))
         else:
             item = old.pop(key)
-            reconciled_dict[key] = reconcile(item, new[key])
+            reconciled_dict[key] = reconcile_components(item, new[key])
     for item in old.values():
         item.unmount()
     return reconciled_dict

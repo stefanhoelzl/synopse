@@ -19,7 +19,7 @@ class TestCompositeComponent:
         composite_component.index = index
         composite_component.content = "OLD"
         composite_component.layout = MagicMock(return_value="NEW")
-        with patch("synopse.composite_component.reconcile",
+        with patch("synopse.composite_component.reconcile_components",
                    return_value="RECONCILED") as reconcile:
             composite_component.update()
         assert "RECONCILED" == composite_component.content

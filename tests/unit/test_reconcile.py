@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 from synopse.component import Component, Index
-from synopse.reconcile import reconcile, reconcile_dict
+from synopse.reconcile import reconcile_components, reconcile_dicts
 
 
-class TestReconcile:
+class TestReconcileComponents:
     def test_on_different_types_unmount_old_mount_new(
             self, index, create_component_class):
         old = create_component_class()()
@@ -12,7 +12,7 @@ class TestReconcile:
         old.index = index
         new = create_component_class()()
         new.mount = MagicMock()
-        assert new == reconcile(old, new)
+        assert new == reconcile_components(old, new)
         new.mount.assert_called_once_with(index)
         old.unmount.assert_called_once()
 
@@ -21,30 +21,30 @@ class TestReconcile:
         old.update = MagicMock()
         new = Component()
         new.attributes = {"attr": True}
-        assert old == reconcile(old, new)
+        assert old == reconcile_components(old, new)
         old.update.assert_called_once_with(new.attributes)
 
     def test_if_eq_no_update(self):
         old = Component()
         old.update = MagicMock()
         new = Component()
-        assert old == reconcile(old, new)
+        assert old == reconcile_components(old, new)
         old.update.assert_not_called()
 
 
-class TestReconcileDict:
+class TestReconcileDicts:
     def test_mount_new_key(self, component):
         new = Component()
         new.mount = MagicMock()
-        assert {"k": new} == reconcile_dict(component, {}, {"k": new})
+        assert {"k": new} == reconcile_dicts(component, {}, {"k": new})
         new.mount.assert_called_once_with(Index(component, "k", None))
 
     def test_reconcile_existing_key(self, component):
         new = Component()
         old = Component()
-        with patch("synopse.reconcile.reconcile") as mock:
+        with patch("synopse.reconcile.reconcile_components") as mock:
             mock.return_value = "reconciled"
-            assert {"k": "reconciled"} == reconcile_dict(
+            assert {"k": "reconciled"} == reconcile_dicts(
                 component, {"k": old}, {"k": new}
             )
         mock.assert_called_once_with(old, new)
@@ -52,5 +52,5 @@ class TestReconcileDict:
     def test_unmount_unused_old_key(self, component):
         old = Component()
         old.unmount = MagicMock()
-        assert {} == reconcile_dict(component, {"k": old}, {})
+        assert {} == reconcile_dicts(component, {"k": old}, {})
         old.unmount.assert_called_once()

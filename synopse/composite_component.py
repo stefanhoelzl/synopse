@@ -2,7 +2,7 @@
 from typing import Any, Optional, Dict
 
 from .component import Component, Index
-from .reconcile import reconcile
+from .reconcile import reconcile_components
 
 
 class CompositeComponent(Component[Component]):
@@ -21,7 +21,7 @@ class CompositeComponent(Component[Component]):
         """Updates itself and its composite"""
         super().update(attributes)
         # pylint: disable=attribute-defined-outside-init
-        self.content = reconcile(self.content, self.layout())
+        self.content = reconcile_components(self.content, self.layout())
 
     def layout(self) -> Component:
         """Describes the layout of the component"""
