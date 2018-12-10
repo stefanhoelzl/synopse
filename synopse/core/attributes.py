@@ -1,6 +1,6 @@
 """Attributes are used to define features of Components"""
 import typing
-from typing import Any, Optional, Dict, Union, Callable, Mapping
+from typing import Any, Optional, Dict, Union, Callable, Mapping, List
 from collections import ChainMap
 from dataclasses import dataclass, asdict
 
@@ -50,7 +50,7 @@ def _extract_values(attributes: Mapping[str, Attribute],
                     *posattrs: Any, **kwattrs: Any) -> Dict[str, Any]:
     values = {}
     for name, attr in attributes.items():
-        value = _get_value(name, attr, posattrs, kwattrs)
+        value = _get_value(name, attr, list(posattrs), kwattrs)
         # pylint: disable=not-callable
         if attr.validator and attr.validator(value) is False:
             raise AttributeValidationFailed(name, value)
@@ -58,10 +58,12 @@ def _extract_values(attributes: Mapping[str, Attribute],
     return values
 
 
-def _get_value(name: str, attr: Attribute, posattrs: Any, kwattrs: Any) -> Any:
+def _get_value(name: str, attr: Attribute,
+               posattrs: List[Any], kwattrs: Dict[str, Any]) -> Any:
     try:
         if attr.position is not None:
-            return posattrs[attr.position]
+            value = posattrs[attr.position]
+            return value
         return kwattrs[name]
     except (IndexError, KeyError):
         if attr.required:

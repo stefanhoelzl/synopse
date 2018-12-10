@@ -38,7 +38,7 @@ class TestExtractValue:
                _extract_values({"my_attr": Attribute(position=0)}, 1)
 
     def test_from_sliced_positional_attribute(self):
-        assert {"my_attr": (1, 3, 5)} == \
+        assert {"my_attr": [1, 3, 5]} == \
                _extract_values({"my_attr": Attribute(position=slice(1, 6, 2))},
                                *tuple(range(9)))
 
