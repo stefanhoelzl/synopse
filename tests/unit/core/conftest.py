@@ -2,15 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from synopse.core.component import Component, Index
+from synopse.core.component import Index
 from synopse.core.composite_component import CompositeComponent
-
-
-@pytest.fixture
-def create_component_class():
-    def wrapper(**attributes):
-        return type("ComponentToTest", (Component,), attributes)
-    return wrapper
 
 
 @pytest.fixture
