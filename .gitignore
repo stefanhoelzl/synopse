@@ -1,5 +1,4 @@
-Pipfile.lock
 .idea
 .pytest_cache
-.venv
+venv
 .mypy_cache
