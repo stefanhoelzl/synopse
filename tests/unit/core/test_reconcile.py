@@ -108,6 +108,14 @@ class TestReconcileDicts:
         assert {} == reconcile_dicts(component, {"k": old}, {})
         old.unmount.assert_called_once()
 
+    def test_unmount_unused_old_list(self, component):
+        old0, old1 = Component(), Component()
+        old0.unmount = MagicMock()
+        old1.unmount = MagicMock()
+        assert {} == reconcile_dicts(component, {"k": [old0, old1]}, {})
+        old0.unmount.assert_called_once()
+        old1.unmount.assert_called_once()
+
 
 class TestReconcileList:
     def test_mount_if_only_in_new(self, component):

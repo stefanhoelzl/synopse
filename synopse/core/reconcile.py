@@ -86,8 +86,8 @@ def reconcile_dicts(host: Component, old: Dict, new: Dict) -> Dict:
         reconciled = reconcile(host, key, None, old.pop(key, None), new_child)
         if reconciled is not None:
             reconciled_dict[key] = reconciled
-    for new_child in old.values():
-        new_child.unmount()
+    for key, old_child in old.items():
+        _unmounted(host, key, old_child)
     return reconciled_dict
 
 
