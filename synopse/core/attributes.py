@@ -17,6 +17,7 @@ class Attribute:
     """Attribute defines a single value feature"""
     default: Any = None
     required: bool = False
+    constructor: Optional[Callable[[Any], Any]] = None
     validator: Optional[Validator] = None
     position: Optional[Union[int, slice]] = None
 
@@ -51,8 +52,11 @@ def _extract_values(attributes: Mapping[str, Attribute],
     values = {}
     for name, attr in attributes.items():
         value = _get_value(name, attr, list(posattrs), kwattrs)
-        # pylint: disable=not-callable
-        if attr.validator and attr.validator(value) is False:
+
+        if attr.constructor is not None:
+            value = attr.constructor(value)
+
+        if attr.validator is not None and attr.validator(value) is False:
             raise AttributeValidationFailed(name, value)
         values[name] = value
     return values

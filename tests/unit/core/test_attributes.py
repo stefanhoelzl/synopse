@@ -53,6 +53,11 @@ class TestExtractValue:
     def test_default_is_none(self):
         assert {"my_attr": None} == _extract_values({"my_attr": Attribute()})
 
+    def test_constructor(self):
+        assert {"my_attr": 1} == _extract_values(
+            {"my_attr": Attribute(constructor=int)}, my_attr="1"
+        )
+
     def test_raises_exception_when_required_and_not_given(self):
         with pytest.raises(RequiredAttributeMissing):
             _extract_values({"my_attr": Attribute(required=True)})
