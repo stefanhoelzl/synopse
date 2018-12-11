@@ -12,11 +12,11 @@ def _iter_captures(namespace: Dict[str, Any], capture_type: type) \
 Wrapper = Optional[Callable[[str], Any]]
 
 
-def capture(cls: type, name: str, cap_type: type, wrapper: Wrapper = None) \
+def capture(cls: type, name: str, cap_type: type) \
         -> None:
     captures = {}
     for cap_name, capturing in _iter_captures(cls.__dict__, cap_type):
         captures[cap_name] = capturing
-        if wrapper:
-            setattr(cls, cap_name, wrapper(cap_name))
+        if capturing.getter:
+            setattr(cls, cap_name, capturing.getter(cap_name))
     setattr(cls, name, getattr(cls, name).new_child(captures))

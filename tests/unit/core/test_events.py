@@ -1,18 +1,19 @@
 from unittest.mock import MagicMock
 
-from synopse.mixins.events import EventMixin, EventAttribute
+from synopse.core.component import Component
+from synopse.core.events import EventAttribute
 
 
 class TestActionMixin:
     def test_action_is_callable(self):
-        class WithEvents(EventMixin):
+        class WithEvents(Component):
             my_event = EventAttribute()
         assert callable(WithEvents().my_event)
 
     def test_emit_event(self):
         event_handler = MagicMock()
 
-        class WithEvents(EventMixin):
+        class WithEvents(Component):
             my_action = EventAttribute()
         with_event = WithEvents(my_action=event_handler)
         with_event.my_action(arg=3)

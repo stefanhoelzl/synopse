@@ -29,22 +29,22 @@ class Attribute:
         self.position = item
         return self
 
+    @staticmethod
+    def getter(name: str) -> property:
+        def wrapper(self: AttributeMixin) -> Any:
+            return self.attributes[name]
+        return property(wrapper)
+
 
 class AttributeMixin:
     Attributes: typing.ChainMap[str, Attribute] = ChainMap()
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
-        capture(cls, "Attributes", Attribute, _attribute_property)
+        capture(cls, "Attributes", Attribute)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.attributes = _extract_values(self.Attributes, *args, **kwargs)
-
-
-def _attribute_property(name: str) -> property:
-    def wrapper(self: AttributeMixin) -> Any:
-        return self.attributes[name]
-    return property(wrapper)
 
 
 def _extract_values(attributes: Mapping[str, Attribute],
