@@ -10,9 +10,20 @@ class Event:
         self.emitter = emitter
 
 
-class EventAttribute(Attribute):
+class EventHandler(Attribute):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            validator=lambda eh: eh is None or callable(eh),
+            **kwargs
+        )
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError()
+
     @staticmethod
     def getter(name: str) -> Callable[[Any], None]:
         def wrapper(self: Component, **kwargs: Any) -> None:
-            self.attributes[name](Event(name, self), **kwargs)
+            if self.attributes[name] is not None:
+                self.attributes[name](Event(name, self), **kwargs)
         return wrapper
