@@ -25,3 +25,7 @@ class FloatAttribute(_AttributeWithConstructor):
 
 class StrAttribute(_AttributeWithConstructor):
     _constructor = str
+
+
+class TupleAttribute(_AttributeWithConstructor):
+    _constructor = tuple

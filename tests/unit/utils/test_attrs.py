@@ -1,4 +1,5 @@
-from synopse.utils.attributes import IntAttribute, FloatAttribute, StrAttribute
+from synopse.utils.attributes import IntAttribute, FloatAttribute, \
+    StrAttribute, TupleAttribute
 
 
 def test_int_attribute(create_component_class):

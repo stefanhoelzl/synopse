@@ -4,6 +4,11 @@ wxPython==4.0.3
 # testing
 pytest>=3.8.1
 pytest-ordering>=0.5
+
 mypy>=0.630
 pylint>=2.1.1
 mccabe>=0.6.1
+
+pyautogui==0.9.38
+pyobjc-core==5.1.1
+pyobjc==5.1.1

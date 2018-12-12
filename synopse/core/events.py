@@ -23,7 +23,7 @@ class EventHandler(Attribute):
 
     @staticmethod
     def getter(name: str) -> Callable[[Any], None]:
-        def wrapper(self: Component, **kwargs: Any) -> None:
+        def wrapper(self: Component, *args: Any, **kwargs: Any) -> None:
             if self.attributes[name] is not None:
-                self.attributes[name](Event(name, self), **kwargs)
+                self.attributes[name](Event(name, self), *args, **kwargs)
         return wrapper
