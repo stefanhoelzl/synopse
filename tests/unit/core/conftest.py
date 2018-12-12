@@ -9,14 +9,14 @@ from synopse.core.composite_component import CompositeComponent
 @pytest.fixture
 def component(create_component_class):
     component = create_component_class()()
-    component.layout = MagicMock()
+    component.structure = MagicMock()
     return component
 
 
 @pytest.fixture
 def composite_component():
     composite = CompositeComponent()
-    composite.layout = MagicMock()
+    composite.structure = MagicMock()
     return composite
 
 

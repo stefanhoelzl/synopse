@@ -21,8 +21,8 @@ class CompositeComponent(Component[Component]):
         """Updates itself and its composite"""
         super().update(attributes)
         # pylint: disable=attribute-defined-outside-init
-        self.content = reconcile_components(self.content, self.layout())
+        self.content = reconcile_components(self.content, self.structure())
 
-    def layout(self) -> Component:
-        """Describes the layout of the component"""
+    def structure(self) -> Component:
+        """Describes the structure of the component"""
         raise NotImplementedError()

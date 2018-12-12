@@ -30,7 +30,7 @@ class TestComponent:
         assert component.index is index
 
     def test_mount_set_content(self, component):
-        component.layout = MagicMock(return_value="LAYOUT")
+        component.structure = MagicMock(return_value="LAYOUT")
         component.mount()
         assert "LAYOUT" == component.content
 

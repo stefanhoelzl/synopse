@@ -8,14 +8,14 @@ ReconcileDictFn = "synopse.core.native_component.reconcile_dicts"
 
 
 class TestNativeComponent:
-    def test_layout_returns_attributes(self):
+    def test_structure_returns_attributes(self):
         component = NativeComponent()
         component.attributes = {"a": 1}
-        assert component.attributes == component.layout()
+        assert component.attributes == component.structure()
 
     def test_mount_children(self):
         component = NativeComponent()
-        component.layout = MagicMock(
+        component.structure = MagicMock(
             return_value={"k": NativeComponent(), "p": [NativeComponent()]}
         )
         component.mount()
@@ -33,7 +33,7 @@ class TestNativeComponent:
     def test_update_reconciles_content(self):
         component = NativeComponent()
         component.content = {"o": "OLD"}
-        component.layout = MagicMock(return_value={"n": "NEW"})
+        component.structure = MagicMock(return_value={"n": "NEW"})
         with patch(ReconcileDictFn) as reconcile:
             component.update()
         reconcile.assert_called_once_with(component, {"o": "OLD"}, {"n": "NEW"})

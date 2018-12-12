@@ -35,10 +35,10 @@ class Component(AttributeMixin, Generic[ContentType]):
     def mount(self, index: Optional[Index] = None) -> None:
         """Mounts a component"""
         self.index = index
-        self._content = self.layout()
+        self._content = self.structure()
 
-    def layout(self) -> ContentType:
-        """Describes the layout of the component"""
+    def structure(self) -> ContentType:
+        """Describes the structure of the component"""
         raise NotImplementedError()
 
     def update(self, attributes: Optional[Dict[str, Any]] = None) -> None:

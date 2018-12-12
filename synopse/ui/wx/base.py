@@ -17,7 +17,7 @@ class WxProperty(Component):
         super().update(attributes)
         self._set()
 
-    def layout(self):
+    def structure(self):
         return None
 
 
@@ -39,7 +39,7 @@ class WxEventHandler(Component):
         self.index.host.wx.Unbind(self.Event)
         super().unmount()
 
-    def layout(self):
+    def structure(self):
         return None
 
 

@@ -5,9 +5,9 @@ from .component import Component, Index
 from .reconcile import reconcile_dicts
 
 
-def _flattened_layout(layout: Dict) \
+def _flattened_structure(structure: Dict) \
         -> Iterator[Tuple[str, Optional[int], Component]]:
-    for key, child in layout.items():
+    for key, child in structure.items():
         if isinstance(child, list):
             for pos, pos_child in enumerate(child):
                 yield key, pos, pos_child
@@ -17,7 +17,7 @@ def _flattened_layout(layout: Dict) \
 
 class NativeComponent(Component[Dict]):
     """Native Component"""
-    def layout(self) -> Dict:
+    def structure(self) -> Dict:
         """Layout is described my its attributes"""
         return self.attributes
 
@@ -25,13 +25,13 @@ class NativeComponent(Component[Dict]):
         """Mounts itself and all its children
         """
         super().mount(index)
-        for key, pos, child in _flattened_layout(self.content):
+        for key, pos, child in _flattened_structure(self.content):
             child.mount(Index(self, key, pos))
 
     def unmount(self) -> None:
         """Unmounts all children and itself.
         """
-        for _, _, child in _flattened_layout(self.content):
+        for _, _, child in _flattened_structure(self.content):
             child.unmount()
         super().unmount()
 
@@ -39,4 +39,4 @@ class NativeComponent(Component[Dict]):
         """Updates itself and all its children"""
         super().update(attributes)
         # pylint: disable=attribute-defined-outside-init
-        self.content = reconcile_dicts(self, self.content, self.layout())
+        self.content = reconcile_dicts(self, self.content, self.structure())
