@@ -24,6 +24,9 @@ class EventHandler(Attribute):
     @staticmethod
     def getter(name: str) -> Callable[[Any], None]:
         def wrapper(self: Component, *args: Any, **kwargs: Any) -> None:
-            if self.attributes[name] is not None:
-                self.attributes[name](Event(name, self), *args, **kwargs)
+            handler = self.attributes[name]
+            if handler is not None:
+                handler(Event(name, self), *args, **kwargs)
+                if isinstance(getattr(handler, "__self__", None), Component):
+                    handler.__self__.update()
         return wrapper

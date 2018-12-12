@@ -2,6 +2,7 @@ import pytest
 
 from unittest.mock import MagicMock
 
+from synopse.core import Component
 from synopse.core.errors import AttributeValidationFailed
 from synopse.core.events import EventHandler
 
@@ -32,3 +33,15 @@ class TestActionMixin:
             create_component_class(my_event=EventHandler())(
                 my_event="not callable"
             )
+
+    def test_update_component(self, create_component_class):
+        class CalledComponent(Component):
+            def handler(self, ev):
+                pass
+        called_component = CalledComponent()
+        called_component.update = MagicMock()
+        component = create_component_class(my_event=EventHandler())(
+            my_event=called_component.handler
+        )
+        component.my_event()
+        called_component.update.assert_called_once()
